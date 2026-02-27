@@ -31,7 +31,9 @@ fn sanitize_filename(raw: &str) -> Result<String> {
 ///
 /// Returns the receive stream (for subsequent file streaming) and the parsed header.
 /// No file is written to disk at this stage — the caller can verify identity first.
-pub async fn read_data_push_header(connection: Connection) -> Result<(RecvStream, DataPushHeader)> {
+pub async fn read_data_push_header(
+    connection: Connection,
+) -> Result<(Connection, RecvStream, DataPushHeader)> {
     let (_, mut recv) = connection
         .accept_bi()
         .await
@@ -59,7 +61,7 @@ pub async fn read_data_push_header(connection: Connection) -> Result<(RecvStream
 
     let header: DataPushHeader = serde_json::from_slice(&header_buf)?;
 
-    Ok((recv, header))
+    Ok((connection, recv, header))
 }
 
 /// Phase 2: Streams the file data from an already-opened receive stream to disk.
@@ -127,8 +129,10 @@ pub async fn handle_data_push(
     connection: Connection,
     storage_dir: &Path,
 ) -> Result<(String, String, String, u64)> {
-    let (recv, header) = read_data_push_header(connection).await?;
-    stream_data_push(recv, &header, storage_dir).await
+    let (connection, recv, header) = read_data_push_header(connection).await?;
+    let result = stream_data_push(recv, &header, storage_dir).await;
+    connection.close(iroh::endpoint::VarInt::from_u32(0), b"done");
+    result
 }
 
 #[cfg(test)]

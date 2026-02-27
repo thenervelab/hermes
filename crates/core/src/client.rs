@@ -700,7 +700,7 @@ impl Client {
                         let remote_pub = connection.remote_id();
 
                         // Issue #4: Read header FIRST, verify identity, THEN stream to disk
-                        let (recv, header) = match read_data_push_header(connection).await {
+                        let (connection, recv, header) = match read_data_push_header(connection).await {
                             Ok(result) => result,
                             Err(e) => {
                                 tracing::warn!(error = %e, "DATA_ALPN: failed to read header");
@@ -760,15 +760,18 @@ impl Client {
                             tracing::warn!(
                                 "DATA_ALPN: Dropped data push due to verification failure"
                             );
+                            connection.close(iroh::endpoint::VarInt::from_u32(1), b"rejected");
                             return;
                         }
 
                         // Identity verified — now stream to disk
                         match stream_data_push(recv, &header, &storage).await {
                             Ok((sender_ss58, filename, local_path, file_size)) => {
+                                connection.close(iroh::endpoint::VarInt::from_u32(0), b"done");
                                 dcb(sender_ss58, filename, local_path, file_size);
                             }
                             Err(e) => {
+                                connection.close(iroh::endpoint::VarInt::from_u32(2), b"error");
                                 tracing::warn!(error = %e, "DATA_ALPN: stream_data_push failed");
                             }
                         }

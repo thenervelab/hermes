@@ -3,6 +3,7 @@ use crate::network::node::DATA_ALPN;
 use iroh::{Endpoint, EndpointAddr};
 use std::path::Path;
 use tokio::io::AsyncReadExt;
+use tokio::time::Duration;
 
 /// Size of each chunk when streaming file bytes over QUIC.
 const CHUNK_SIZE: usize = 64 * 1024; // 64 KB
@@ -87,11 +88,15 @@ pub async fn push_file(
     send.finish()
         .map_err(|e| HermesError::Iroh(anyhow::anyhow!("Failed to finish stream: {}", e)))?;
 
-    // Wait for the receiver to process the stream before dropping the connection.
-    // The receiver needs the connection alive to accept_bi() and read the data.
+    // Wait for the receiver to close the connection (confirming it processed the data).
+    // Use a timeout as a safety net in case the receiver doesn't send CONNECTION_CLOSE.
     tracing::info!("File data sent, waiting for receiver to process...");
-    connection.closed().await;
-    tracing::info!("Receiver closed connection, transfer complete");
+    match tokio::time::timeout(Duration::from_secs(30), connection.closed()).await {
+        Ok(_) => tracing::info!("Receiver closed connection, transfer complete"),
+        Err(_) => tracing::warn!(
+            "Timed out waiting for receiver close — data was sent successfully"
+        ),
+    }
 
     Ok(filename)
 }
