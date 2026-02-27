@@ -1,0 +1,36 @@
+[build-system]
+requires = ["maturin>=1.0,<2.0"]
+build-backend = "maturin"
+
+[project]
+name = "hippius-hermes"
+version = "0.1.0"
+description = "High-performance M2M protocol for Bittensor subnets using Hippius Arion"
+readme = "README.md"
+license = { file = "LICENSE" }
+authors = [{ name = "Hippius Protocol" }]
+requires-python = ">=3.8"
+classifiers = [
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Rust",
+    "Programming Language :: Python :: Implementation :: CPython",
+    "Programming Language :: Python :: Implementation :: PyPy",
+    "Topic :: System :: Networking",
+]
+dependencies = [
+    "click>=8.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/thenervelab/hermes"
+Repository = "https://github.com/thenervelab/hermes"
+Issues = "https://github.com/thenervelab/hermes/issues"
+
+[project.scripts]
+hermes = "hermes.cli:main"
+
+[tool.maturin]
+features = ["pyo3/extension-module"]
+module-name = "hermes.core"
+manifest-path = "crates/python/Cargo.toml"
+python-source = "python"

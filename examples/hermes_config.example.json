@@ -1,0 +1,14 @@
+{
+    "node_secret_key_path": "/path/to/your/iroh.key",
+    "ss58_address": "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
+    "api_token": "sk-your-hippius-token-here",
+    "storage_directory": ".hermes_data",
+    "subnet_ids": [],
+    "s3": {
+        "bucket": "hippius-arion",
+        "access_key": "YOUR_ACCESS_KEY",
+        "secret_key": "YOUR_SECRET_KEY"
+    },
+    "enable_firewall": false,
+    "pullweights_api_key": null
+}

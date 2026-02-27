@@ -1,0 +1,1455 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hippius Hermes | Documentation</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=SF+Mono:wght@400;500&display=swap"
+        rel="stylesheet">
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="docs.css">
+</head>
+
+<body>
+    <nav class="navbar animate-fade-in">
+        <div class="nav-pill clay-surface">
+            <div class="logo">
+                <i class='bx bx-hive'></i>
+                <a href="index.html" style="text-decoration: none; color: inherit;"><span>Hippius Hermes</span></a>
+            </div>
+            <div class="nav-links">
+                <a href="index.html#architecture">Architecture</a>
+                <a href="index.html#developer">Developer</a>
+                <a href="docs.html" class="active">Docs</a>
+                <a href="https://github.com/thenervelab/hermes" target="_blank" class="btn-clean">GitHub</a>
+            </div>
+            <div class="menu-toggle" id="mobile-menu">
+                <i class='bx bx-menu'></i>
+            </div>
+        </div>
+    </nav>
+
+    <main class="docs-main">
+        <aside class="docs-sidebar">
+            <nav class="docs-nav">
+                <h4>Getting Started</h4>
+                <ul>
+                    <li><a href="#overview" class="active">Overview</a></li>
+                    <li><a href="#installation">Installation</a></li>
+                    <li><a href="#registration">Node Registration</a></li>
+                    <li><a href="#configuration">Configuration</a></li>
+                </ul>
+                <h4>ALPN Protocols</h4>
+                <ul>
+                    <li><a href="#alpn-overview">How ALPN Works</a></li>
+                    <li><a href="#cross-subnet">Cross-Subnet Protocol</a></li>
+                    <li><a href="#per-subnet">Per-Subnet Protocols</a></li>
+                    <li><a href="#multi-subnet">Multi-Subnet Whitelisting</a></li>
+                </ul>
+                <h4>API Reference</h4>
+                <ul>
+                    <li><a href="#python-api">Python API</a></li>
+                    <li><a href="#rust-api">Rust API</a></li>
+                    <li><a href="#cli-reference">CLI Reference</a></li>
+                </ul>
+                <h4>Data Plane</h4>
+                <ul>
+                    <li><a href="#direct-p2p">Direct P2P Stream</a></li>
+                    <li><a href="#s3-downloads">S3 Pre-Signed Gets</a></li>
+                    <li><a href="#e2ee">End-to-End Encryption</a></li>
+                    <li><a href="#direct-vs-store">Direct vs Sync-Engine</a></li>
+                </ul>
+                <h4>Security</h4>
+                <ul>
+                    <li><a href="#multi-subnet">ALPN Multi-Subnet</a></li>
+                    <li><a href="#api-firewall">Dynamic O(1) Firewall</a></li>
+                    <li><a href="#acl">Global ACL</a></li>
+                </ul>
+                <h4>Model Registry</h4>
+                <ul>
+                    <li><a href="#pullweights">PullWeights Integration</a></li>
+                </ul>
+                <h4>Examples</h4>
+                <ul>
+                    <li><a href="#example-single">Single Subnet</a></li>
+                    <li><a href="#example-multi">Multiple Subnets</a></li>
+                    <li><a href="#example-cross">Cross-Subnet</a></li>
+                    <li><a href="#example-rust">Rust Examples</a></li>
+                </ul>
+            </nav>
+        </aside>
+
+        <div class="docs-content">
+            <!-- Overview -->
+            <section id="overview">
+                <h1>Hippius Hermes Documentation</h1>
+                <p class="docs-lead">
+                    Hermes is a Bittensor cross-subnet Machine-to-Machine (M2M) communication protocol.
+                    It enables trustless, high-bandwidth communication between any two nodes across any
+                    Bittensor subnet using Hippius infrastructure.
+                </p>
+
+                <div class="docs-card">
+                    <h3>Dual-Layer Architecture</h3>
+                    <div class="docs-grid-2">
+                        <div class="docs-feature">
+                            <div class="docs-feature-icon purple"><i class='bx bx-broadcast'></i></div>
+                            <div>
+                                <strong>Control Plane</strong>
+                                <p>Low-latency QUIC signaling via <code>iroh-net</code> with direct UDP hole-punching.
+                                    No relays.</p>
+                            </div>
+                        </div>
+                        <div class="docs-feature">
+                            <div class="docs-feature-icon blue"><i class='bx bx-data'></i></div>
+                            <div>
+                                <strong>Data Plane</strong>
+                                <p>Large file transfer via the Hippius Sync-Engine API (Coming Soon!). Control messages
+                                    carry metadata
+                                    and keys, not the data itself.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Installation -->
+            <section id="installation">
+                <h2>Installation</h2>
+
+                <h3>Python</h3>
+                <pre><code class="lang-bash">pip install hippius-hermes</code></pre>
+
+                <h3>Rust</h3>
+                <pre><code class="lang-toml">[dependencies]
+hippius-hermes-core = "0.1"</code></pre>
+            </section>
+
+            <!-- Node Registration -->
+            <section id="registration">
+                <h2>Node Registration</h2>
+                <p>
+                    Before a Hermes Node can send or receive messages on the network, its offline <strong>Iroh Ed25519
+                        SecretKey</strong> must be cryptographically associated with your main <strong>Substrate
+                        Wallet</strong> in the <code>AccountProfile</code> pallet on the Hippius chain.
+                </p>
+
+                <p>We provide two automated CLI registration methods: <strong>API (Feeless)</strong> and <strong>Chain
+                        (Direct)</strong>.</p>
+
+                <h3>1. Generate an identity</h3>
+                <p>First, generate your local node secret key:</p>
+                <div class="code-block">
+                    <pre><code class="lang-bash">cargo run --bin hippius-hermes-cli -- keygen --out-path hermes.key</code></pre>
+                </div>
+
+                <h3>2. Register your Node</h3>
+                <p>Configure your <code>hermes_config.json</code> with your SS58 wallet address and the path to
+                    the key you just generated. Then run the interactive registration command:</p>
+
+                <div class="code-block">
+                    <pre><code class="lang-bash"># Default (API Method - No Substrate Tokens Required!)
+cargo run --bin hippius-hermes-cli -- --config hermes_config.json register --ss58 5Grwv... --username my_node
+
+# Direct Chain Method (Requires Substrate Tokens for Gas)
+cargo run --bin hippius-hermes-cli -- --config hermes_config.json register --ss58 5Grwv... --method chain</code></pre>
+                </div>
+
+                <div class="terminal-note">
+                    <p><strong>Cryptographic Ownership Verification</strong></p>
+                    <p>Regardless of the method chosen, the CLI will prompt you locally for your Substrate Wallet
+                        Mnemonic.</p>
+                    <code>Enter Substrate Wallet Mnemonic (hidden): *****</code>
+                    <p style="margin-top: 12px; font-size: 0.9em; opacity: 0.8;">
+                        <em>Security Note: If you use the default API method, your mnemonic is <strong>never
+                                transmitted</strong>. It is exclusively used locally by the Rust Keyring to generate a
+                            mathematical Signature over your Iroh NodeId. This signature is then POSTed to the Hippius
+                            API, which transparently pays the Extrinsic Gas fees on your behalf.</em>
+                    </p>
+                </div>
+            </section>
+
+            <!-- Configuration -->
+            <section id="configuration">
+                <h2>Configuration</h2>
+                <p>
+                    Every Hermes node requires a configuration that identifies the node and controls
+                    its network behavior. The <code>subnet_ids</code> field is the key to ALPN-based
+                    subnet whitelisting.
+                </p>
+
+                <h3>Config Fields</h3>
+                <div class="docs-table-wrap">
+                    <table class="docs-table">
+                        <thead>
+                            <tr>
+                                <th>Field</th>
+                                <th>Type</th>
+                                <th>Required</th>
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>node_secret_key_path</code></td>
+                                <td>string</td>
+                                <td>Yes</td>
+                                <td>Path to the 32-byte Ed25519 secret key file for Iroh node identity</td>
+                            </tr>
+                            <tr>
+                                <td><code>ss58_address</code></td>
+                                <td>string</td>
+                                <td>Yes</td>
+                                <td>Your node's SS58 address on the Bittensor network</td>
+                            </tr>
+                            <tr>
+                                <td><code>api_token</code></td>
+                                <td>string</td>
+                                <td>Yes</td>
+                                <td>Hippius Sync-Engine API token for data plane access (Coming Soon)</td>
+                            </tr>
+                            <tr>
+                                <td><code>storage_directory</code></td>
+                                <td>string</td>
+                                <td>Yes</td>
+                                <td>Local directory for the offline message queue database</td>
+                            </tr>
+                            <tr>
+                                <td><code>rpc_url</code></td>
+                                <td>string</td>
+                                <td>No</td>
+                                <td>Hippius chain RPC endpoint. Default: <code>wss://rpc.hippius.network:443</code></td>
+                            </tr>
+
+                            <tr>
+                                <td><code>subnet_ids</code></td>
+                                <td>array of u16</td>
+                                <td>No</td>
+                                <td>List of Bittensor subnet netuids to whitelist. Default: <code>[]</code>
+                                    (cross-subnet only)</td>
+                            </tr>
+                            <tr>
+                                <td><code>s3</code></td>
+                                <td>object</td>
+                                <td>No</td>
+                                <td>Optional native S3 credentials block containing <code>bucket</code>,
+                                    <code>access_key</code>, and <code>secret_key</code> to override the Arion HTTP API.
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><code>enable_firewall</code></td>
+                                <td>boolean</td>
+                                <td>No</td>
+                                <td>If <code>true</code>, Hermes will aggressively drop all incoming connections from
+                                    SS58 addresses not injected via <code>client.set_firewall_whitelist([...])</code>.
+                                    Default: <code>false</code>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><code>pullweights_api_key</code></td>
+                                <td>string</td>
+                                <td>No</td>
+                                <td>Optional PullWeights API key for pushing/pulling ML models via the
+                                    <code>pullweights.com</code> registry. Default: <code>null</code>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><code>enable_queue</code></td>
+                                <td>boolean</td>
+                                <td>No</td>
+                                <td>Enable persistent sled message queue. Only needed for listeners.
+                                    Default: <code>false</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>encryption_key_path</code></td>
+                                <td>string</td>
+                                <td>No</td>
+                                <td>Path to 32-byte X25519 secret key file for E2E encrypted messaging.
+                                    Default: <code>null</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>skip_identity_verification</code></td>
+                                <td>boolean</td>
+                                <td>No</td>
+                                <td>Skip on-chain identity verification for incoming P2P data.
+                                    Default: <code>false</code></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h3>JSON Config File</h3>
+                <pre><code class="lang-json">{
+    "node_secret_key_path": "/etc/hermes/iroh.key",
+    "ss58_address": "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
+    "api_token": "sk-your-hippius-token-here",
+    "storage_directory": ".hermes_data",
+    "rpc_url": "wss://rpc.hippius.network:443",
+    "subnet_ids": [42, 69],
+    "s3": {
+        "bucket": "hippius-arion",
+        "access_key": "YOUR_KEY",
+        "secret_key": "YOUR_SECRET"
+    },
+    "enable_firewall": true,
+    "pullweights_api_key": "sk-pw-your-key-here",
+    "encryption_key_path": "./hermes_encryption.key"
+}</code></pre>
+                <p>
+                    The <code>subnet_ids</code> field is optional. If omitted, the node only accepts the
+                    universal cross-subnet protocol <code>hippius-hermes/1</code>. When specified, the node
+                    additionally accepts per-subnet protocols for each listed netuid.
+                </p>
+            </section>
+
+            <!-- ALPN Overview -->
+            <section id="alpn-overview">
+                <h2>ALPN Protocol Negotiation</h2>
+                <p>
+                    Hermes uses <strong>Application-Layer Protocol Negotiation (ALPN)</strong> to scope
+                    and filter QUIC connections at the TLS level. ALPN is a TLS extension that lets the
+                    client and server agree on an application protocol during the TLS handshake &mdash; before
+                    any application data is exchanged.
+                </p>
+
+                <div class="docs-callout info">
+                    <i class='bx bx-info-circle'></i>
+                    <div>
+                        <strong>Why ALPN?</strong>
+                        Connections with unrecognized ALPNs are rejected during the TLS handshake itself,
+                        before any application code runs. This makes ALPN filtering extremely efficient
+                        and impossible to bypass without a valid TLS certificate for the expected protocol.
+                    </div>
+                </div>
+
+                <h3>Protocol Format</h3>
+                <div class="docs-table-wrap">
+                    <table class="docs-table">
+                        <thead>
+                            <tr>
+                                <th>Protocol</th>
+                                <th>ALPN String</th>
+                                <th>Scope</th>
+                                <th>Always Registered</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Cross-subnet</td>
+                                <td><code>hippius-hermes/1</code></td>
+                                <td>Universal &mdash; any node can communicate</td>
+                                <td>Yes</td>
+                            </tr>
+                            <tr>
+                                <td>Per-subnet</td>
+                                <td><code>hippius-hermes/subnet/&lt;netuid&gt;</code></td>
+                                <td>Scoped to a specific Bittensor subnet</td>
+                                <td>Only if listed in <code>subnet_ids</code></td>
+                            </tr>
+                            <tr>
+                                <td>Data plane (P2P)</td>
+                                <td><code>hippius-hermes/data/1</code></td>
+                                <td>Direct peer-to-peer file streaming</td>
+                                <td>Yes</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h3>How It Works</h3>
+                <div class="docs-steps">
+                    <div class="docs-step">
+                        <div class="docs-step-num">1</div>
+                        <div>
+                            <strong>Registration</strong>
+                            <p>
+                                At startup, the node registers ALPNs with the Iroh QUIC endpoint based on
+                                <code>subnet_ids</code>. The cross-subnet ALPN <code>hippius-hermes/1</code> is
+                                always registered automatically.
+                            </p>
+                        </div>
+                    </div>
+                    <div class="docs-step">
+                        <div class="docs-step-num">2</div>
+                        <div>
+                            <strong>Connection</strong>
+                            <p>
+                                When a sender connects, they specify which ALPN to use. The receiver's TLS
+                                config automatically rejects connections that don't match any registered ALPN.
+                            </p>
+                        </div>
+                    </div>
+                    <div class="docs-step">
+                        <div class="docs-step-num">3</div>
+                        <div>
+                            <strong>Validation</strong>
+                            <p>
+                                After the TLS handshake, the listener performs a defense-in-depth check
+                                by verifying the negotiated ALPN against its registered set before processing
+                                any message.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Cross-Subnet -->
+            <section id="cross-subnet">
+                <h2>Cross-Subnet Protocol</h2>
+                <p>
+                    The cross-subnet ALPN <code>hippius-hermes/1</code> is the universal protocol that every
+                    Hermes node accepts regardless of configuration. It enables communication between
+                    nodes on <em>different</em> Bittensor subnets.
+                </p>
+                <pre><code class="lang-text">ALPN: hippius-hermes/1
+
+Sender (Subnet 42) ──── hippius-hermes/1 ────> Receiver (Subnet 69)
+                    Cross-subnet OK</code></pre>
+                <p>
+                    Use this when your message isn't scoped to a specific subnet &mdash; for example, when a
+                    validator on subnet 42 needs to coordinate with a miner on subnet 69.
+                </p>
+                <div class="docs-callout tip">
+                    <i class='bx bx-bulb'></i>
+                    <div>
+                        Even with an empty <code>subnet_ids</code> config, the node always accepts
+                        <code>hippius-hermes/1</code> connections. This ensures every node is reachable for
+                        cross-subnet communication.
+                    </div>
+                </div>
+            </section>
+
+            <!-- Per-Subnet -->
+            <section id="per-subnet">
+                <h2>Per-Subnet Protocols</h2>
+                <p>
+                    Per-subnet ALPNs let nodes scope their communication to a specific Bittensor subnet.
+                    When a node registers <code>subnet_ids: [42]</code>, it additionally accepts connections
+                    using the ALPN <code>hippius-hermes/subnet/42</code>.
+                </p>
+                <pre><code class="lang-text">ALPN: hippius-hermes/subnet/42
+
+Sender (Subnet 42) ── hippius-hermes/subnet/42 ──> Receiver (Subnet 42)
+                      Same subnet OK
+
+Sender (Subnet 69) ── hippius-hermes/subnet/42 ──> Receiver (Subnet 42)
+                      Receiver accepts (42 is registered)
+
+Sender (Subnet 69) ── hippius-hermes/subnet/69 ──> Receiver (Subnet 42)
+                      TLS REJECTED (69 not in receiver's subnet_ids)</code></pre>
+                <p>
+                    This means a receiver with <code>subnet_ids: [42]</code> will accept connections
+                    on <code>hippius-hermes/subnet/42</code> (and the universal <code>hippius-hermes/1</code>), but
+                    will reject connections on <code>hippius-hermes/subnet/69</code> at the TLS level.
+                </p>
+            </section>
+
+            <!-- Multi-Subnet Whitelisting -->
+            <section id="multi-subnet">
+                <h2>Multi-Subnet Whitelisting</h2>
+                <p>
+                    Nodes can participate in multiple subnets simultaneously by listing multiple netuids
+                    in the <code>subnet_ids</code> array. Each netuid adds a corresponding ALPN protocol
+                    to the node's accepted set.
+                </p>
+
+                <h3>How It Works</h3>
+                <p>Given this configuration:</p>
+                <pre><code class="lang-json">{
+    "subnet_ids": [1, 42, 69]
+}</code></pre>
+                <p>The node registers <strong>4 ALPNs</strong>:</p>
+                <div class="docs-table-wrap">
+                    <table class="docs-table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>ALPN</th>
+                                <th>Source</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>1</td>
+                                <td><code>hippius-hermes/1</code></td>
+                                <td>Always registered (cross-subnet)</td>
+                            </tr>
+                            <tr>
+                                <td>2</td>
+                                <td><code>hippius-hermes/subnet/1</code></td>
+                                <td>From <code>subnet_ids</code></td>
+                            </tr>
+                            <tr>
+                                <td>3</td>
+                                <td><code>hippius-hermes/subnet/42</code></td>
+                                <td>From <code>subnet_ids</code></td>
+                            </tr>
+                            <tr>
+                                <td>4</td>
+                                <td><code>hippius-hermes/subnet/69</code></td>
+                                <td>From <code>subnet_ids</code></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h3>Connection Matrix</h3>
+                <p>
+                    With multi-subnet whitelisting, the node accepts incoming connections on any
+                    of its registered ALPNs:
+                </p>
+                <pre><code class="lang-text">Node A: subnet_ids = [42, 69]
+    Accepts: hippius-hermes/1, hippius-hermes/subnet/42, hippius-hermes/subnet/69
+
+Node B: subnet_ids = [42, 100]
+    Accepts: hippius-hermes/1, hippius-hermes/subnet/42, hippius-hermes/subnet/100
+
+Communication paths:
+    A -> B via hippius-hermes/1           OK  (both accept cross-subnet)
+    A -> B via hippius-hermes/subnet/42   OK  (B has 42 registered)
+    A -> B via hippius-hermes/subnet/69   FAIL (B does NOT have 69 registered)
+    A -> B via hippius-hermes/subnet/100  OK  (B has 100 registered)
+    B -> A via hippius-hermes/subnet/100  FAIL (A does NOT have 100 registered)
+    B -> A via hippius-hermes/subnet/42   OK  (A has 42 registered)</code></pre>
+
+                <div class="docs-callout warning">
+                    <i class='bx bx-error'></i>
+                    <div>
+                        <strong>ALPN is receiver-side filtering.</strong>
+                        The sender picks which ALPN to use when connecting. The receiver's TLS config
+                        determines whether to accept or reject. Both nodes must agree on at least one
+                        common ALPN for communication to succeed. The universal <code>hippius-hermes/1</code>
+                        guarantees a fallback path always exists.
+                    </div>
+                </div>
+
+                <h3>Typical Deployment Patterns</h3>
+                <div class="docs-grid-2">
+                    <div class="docs-card-sm">
+                        <h4>Subnet-Only Miner</h4>
+                        <pre><code class="lang-json">"subnet_ids": [42]</code></pre>
+                        <p>Accepts traffic from subnet 42 and cross-subnet. Rejects per-subnet traffic from any other
+                            subnet.</p>
+                    </div>
+                    <div class="docs-card-sm">
+                        <h4>Multi-Subnet Validator</h4>
+                        <pre><code class="lang-json">"subnet_ids": [1, 42, 69, 100]</code></pre>
+                        <p>Participates in 4 subnets simultaneously. Accepts per-subnet traffic from all of them.</p>
+                    </div>
+                    <div class="docs-card-sm">
+                        <h4>Cross-Subnet Relay</h4>
+                        <pre><code class="lang-json">"subnet_ids": []</code></pre>
+                        <p>Only accepts the universal <code>hippius-hermes/1</code> protocol. Acts as a cross-subnet
+                            bridge.</p>
+                    </div>
+                    <div class="docs-card-sm">
+                        <h4>Full-Network Node</h4>
+                        <pre><code class="lang-json">"subnet_ids": [1, 2, 3, ..., 255]</code></pre>
+                        <p>Registers ALPNs for every subnet. Accepts all per-subnet and cross-subnet traffic.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- API Firewall -->
+            <section id="api-firewall">
+                <h2>Dynamic API Firewall</h2>
+                <p>
+                    By default, Hippius Hermes accepts incoming connections from any node that correctly formats the
+                    ALPN handshake.
+                    To protect validators and miners against volumetric connection DDoS from unauthorized identities,
+                    you can enable the <strong>O(1) Memory Firewall</strong>.
+                </p>
+
+                <div class="docs-callout tip">
+                    <i class='bx bx-check-shield'></i>
+                    <div>
+                        <strong>Zero-Resource Rejection</strong>
+                        When <code>enable_firewall: true</code> is configured, the inner Rust QUIC engine intercepts TLS
+                        handshakes. It resolves the incoming <code>NodeId</code> to its SS58 address. If the SS58 is not
+                        in the whitelist, the connection is instantly killed <em>before</em> any streams are allocated
+                        or async memory is reserved, completely eliminating memory-exhaustion vectors.
+                    </div>
+                </div>
+
+                <h3>Python Whitelist Injection</h3>
+                <p>Validators generally sync the Bittensor Metagraph every 12 seconds. Whenever the metagraph updates,
+                    you dynamically inject the list of valid miner SS58 hotkeys into the Rust engine's active memory:
+                </p>
+                <div class="code-block">
+                    <pre><code class="lang-python"># Inside your Validator sync loop:
+valid_hotkeys = metagraph.hotkeys  # List of string SS58 addresses
+
+# Instantaneously updates the Rust QUIC Firewall rules
+client.set_firewall_whitelist(valid_hotkeys)</code></pre>
+                </div>
+            </section>
+
+            <!-- Global ACL -->
+            <section id="acl">
+                <h2>Global ACL (Access Control List)</h2>
+                <p>
+                    In addition to the subnet firewall, Hermes provides a <strong>Nebula-inspired global ACL</strong>
+                    that applies to <em>all</em> ALPNs (data, cross-subnet, subnet). The ACL has two layers:
+                </p>
+
+                <div class="docs-steps">
+                    <div class="docs-step">
+                        <div class="docs-step-num">1</div>
+                        <div>
+                            <strong>Blocklist</strong>
+                            <p>Nodes on the blocklist are always rejected, regardless of allowlist status. Blocklist
+                                wins.</p>
+                        </div>
+                    </div>
+                    <div class="docs-step">
+                        <div class="docs-step-num">2</div>
+                        <div>
+                            <strong>Allowlist</strong>
+                            <p>If the allowlist is non-empty, only listed nodes pass. If the allowlist is empty, all
+                                non-blocked nodes are allowed (open policy).</p>
+                        </div>
+                    </div>
+                </div>
+
+                <h3>Python Example</h3>
+                <pre><code class="lang-python"># Block specific bad actors
+resolved = await client.set_acl_blocklist(["5BadActor1...", "5BadActor2..."])
+print(f"Blocked {resolved} nodes")
+
+# Restrict to known-good nodes only
+resolved = await client.set_acl_allowlist(metagraph.hotkeys)
+print(f"Allowlisted {resolved} nodes")</code></pre>
+
+                <div class="docs-callout info">
+                    <i class='bx bx-info-circle'></i>
+                    <div>
+                        <strong>Two-layer access control.</strong>
+                        Incoming connections pass through the Global ACL first (all ALPNs), then the Subnet Firewall
+                        (subnet ALPNs only). Both <code>set_acl_allowlist()</code> and <code>set_acl_blocklist()</code>
+                        return the number of successfully resolved SS58 addresses.
+                    </div>
+                </div>
+            </section>
+
+            <!-- Direct P2P Transfers -->
+            <section id="direct-p2p">
+                <h2>Direct P2P File Transfers</h2>
+                <p>
+                    Hermes supports <strong>direct peer-to-peer file streaming</strong> over QUIC. Files are pushed
+                    directly from sender to receiver using
+                    the <code>hippius-hermes/data/1</code> ALPN protocol.
+                </p>
+
+                <div class="docs-callout info">
+                    <i class='bx bx-info-circle'></i>
+                    <div>
+                        <strong>Push-based model.</strong>
+                        The sender initiates the transfer and pushes file bytes directly to the receiver.
+                        The receiver's listener fires a data callback when the file arrives &mdash; no manual
+                        pull needed.
+                    </div>
+                </div>
+
+                <h3>How It Works</h3>
+                <div class="docs-steps">
+                    <div class="docs-step">
+                        <div class="docs-step-num">1</div>
+                        <div>
+                            <strong>Connect</strong>
+                            <p>Sender resolves the receiver's NodeId from their SS58 address and connects on
+                                <code>hippius-hermes/data/1</code>.
+                            </p>
+                        </div>
+                    </div>
+                    <div class="docs-step">
+                        <div class="docs-step-num">2</div>
+                        <div>
+                            <strong>Stream</strong>
+                            <p>Sender writes a length-prefixed JSON header followed by raw file bytes (64KB chunks) over
+                                a QUIC bi-stream.</p>
+                        </div>
+                    </div>
+                    <div class="docs-step">
+                        <div class="docs-step-num">3</div>
+                        <div>
+                            <strong>Receive</strong>
+                            <p>Receiver verifies sender identity, streams bytes to disk, and fires the data callback
+                                with file metadata.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <h3>Python Example</h3>
+                <pre><code class="lang-python"># Sender: push file directly to peer
+filename = await client.send_file_unencrypted(dest_ss58, "./gradients.bin")
+
+# Receiver: register data callback
+def on_file(sender_ss58, filename, local_path, file_size):
+    print(f"Received {filename} ({file_size} bytes) from {sender_ss58}")
+    print(f"Saved to: {local_path}")
+
+client.start_listener(on_message, on_data=on_file)</code></pre>
+
+                <h3>Rust Example</h3>
+                <pre><code class="lang-rust">// Sender: push file directly to peer
+let filename = client
+    .send_file_unencrypted(dest_ss58, "./gradients.bin")
+    .await?;
+
+// Receiver: register data callback
+client.spawn_listener(
+    |msg| println!("Control: {}", msg.action),
+    Some(|sender, filename, path, size| {
+        println!("Received {} ({} bytes) at {}", filename, size, path);
+    }),
+);</code></pre>
+            </section>
+
+            <!-- End-to-End Encryption -->
+            <section id="e2ee">
+                <h2>End-to-End Encryption (E2EE)</h2>
+                <p>
+                    Hermes nodes support secure payload delivery using the TweetNaCl <code>crypto_box</code> standard
+                    (X25519, XSalsa20, Poly1305).
+                </p>
+
+                <div class="docs-callout tip">
+                    <i class='bx bx-lock-alt'></i>
+                    <div>
+                        <strong>How it Works</strong>
+                        During CLI registration, Hermes generates a static X25519 keypair. The private key is saved
+                        locally
+                        (<code>hermes_encryption.key</code>), and the public key is broadcasted to the decentralized
+                        Hippius blockchain
+                        inside the <code>AccountProfile</code> pallet. Senders can query this on-chain state to encrypt
+                        a payload
+                        that ONLY the target Hermes node can decrypt!
+                    </div>
+                </div>
+
+                <h3>How It Works</h3>
+                <div class="docs-steps">
+                    <div class="docs-step">
+                        <div class="docs-step-num">1</div>
+                        <div>
+                            <strong>Registration</strong>
+                            <p>During <code>hippius-hermes-cli register</code>, a static X25519 keypair is generated.
+                                The private key is saved locally as <code>hermes_encryption.key</code>. The public key
+                                is written to the <code>AccountProfile</code> pallet on the Hippius blockchain.</p>
+                        </div>
+                    </div>
+                    <div class="docs-step">
+                        <div class="docs-step-num">2</div>
+                        <div>
+                            <strong>Key Lookup</strong>
+                            <p>The sender queries the target's SS58 address on-chain to retrieve their static X25519
+                                public key from the <code>AccountProfile</code> storage.</p>
+                        </div>
+                    </div>
+                    <div class="docs-step">
+                        <div class="docs-step-num">3</div>
+                        <div>
+                            <strong>Ephemeral DH Exchange</strong>
+                            <p>The sender generates a throwaway ephemeral X25519 keypair for Perfect Forward Secrecy.
+                                A shared secret is derived from the ephemeral private key and the target's static
+                                public key.</p>
+                        </div>
+                    </div>
+                    <div class="docs-step">
+                        <div class="docs-step-num">4</div>
+                        <div>
+                            <strong>Encrypt &amp; Transmit</strong>
+                            <p>The payload is encrypted using XSalsa20-Poly1305 with the shared secret. The ciphertext
+                                and the ephemeral public key are transmitted to the receiver.</p>
+                        </div>
+                    </div>
+                    <div class="docs-step">
+                        <div class="docs-step-num">5</div>
+                        <div>
+                            <strong>Decrypt</strong>
+                            <p>The receiver reconstructs the shared secret using their static private key and the
+                                sender's ephemeral public key, then decrypts the ciphertext.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <h3>Native Hermes E2EE</h3>
+                <p>The Hermes SDK handles E2EE natively — no manual crypto required. The client automatically
+                    resolves the recipient's on-chain encryption key and applies NaCl SealedBox encryption.</p>
+
+                <h4>Python</h4>
+                <div class="code-block">
+                    <pre><code class="lang-python">from hermes import Config, HermesClient
+import asyncio
+
+async def main():
+    config = Config.from_file("hermes_config.json")
+    client = await HermesClient.create(config)
+
+    # Send an E2E encrypted message (NaCl SealedBox)
+    await client.send_message_encrypted(
+        "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
+        b"top secret payload data"
+    )
+
+asyncio.run(main())</code></pre>
+                </div>
+
+                <h4>CLI</h4>
+                <div class="code-block">
+                    <pre><code class="lang-bash">hippius-hermes-cli --config hermes_config.json send-encrypted \
+    --dest-ss58 5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY \
+    --message "top secret payload data"</code></pre>
+                </div>
+
+                <h3>Python E2EE Sender (Standalone)</h3>
+                <p><strong>Note:</strong> Standard Rust/C++ Hermes nodes natively automate this entire on-chain key
+                    lookup and handshake process over QUIC under the hood! However, if you are writing an external
+                    application (like a Python web backend) that needs to send an encrypted payload to a Hermes node,
+                    you can use the <code>substrate-interface</code> and <code>PyNaCl</code> libraries to securely
+                    encrypt a payload directly from the blockchain state.</p>
+                <div class="code-block">
+                    <pre><code class="lang-python">from nacl.public import PrivateKey, PublicKey, Box
+from nacl.encoding import HexEncoder
+from substrateinterface import SubstrateInterface
+
+# 1. Query target's encryption key from the Hippius blockchain
+substrate = SubstrateInterface(url="wss://rpc.hippius.network:443")
+bob_ss58 = "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY"
+
+result = substrate.query("AccountProfile", "AccountProfiles", [bob_ss58])
+bob_pub_hex = result.value['encryption_key'].replace("0x", "")
+
+# 2. Generate ephemeral X25519 keypair for Perfect Forward Secrecy
+ephemeral_private = PrivateKey.generate()
+ephemeral_public = ephemeral_private.public_key
+
+# 3. Encrypt with TweetNaCl crypto_box (X25519 + XSalsa20-Poly1305)
+bob_pub = PublicKey(bob_pub_hex.encode("utf-8"), encoder=HexEncoder)
+sender_box = Box(ephemeral_private, bob_pub)
+
+message = b"Secure model weights for subnet 42"
+encrypted = sender_box.encrypt(message)  # Nonce auto-prepended
+
+# 4. Transmit encrypted payload + ephemeral public key to Bob
+# Bob needs: encrypted (bytes), ephemeral_public (bytes)
+print(f"Encrypted {len(encrypted)} bytes — only Bob can decrypt")</code></pre>
+                </div>
+
+                <h3>Python E2EE Receiver</h3>
+                <p>The receiving Hermes node decrypts using its static private key and the sender's ephemeral
+                    public key:</p>
+                <div class="code-block">
+                    <pre><code class="lang-python">from nacl.public import PrivateKey, PublicKey, Box
+from nacl.encoding import RawEncoder
+
+# 1. Bob loads his static private key from disk (generated during registration)
+with open("hermes_encryption.key", "rb") as f:
+    bob_private = PrivateKey(f.read(), encoder=RawEncoder)
+
+# 2. Reconstruct the Box using Bob's private key + Alice's ephemeral public key
+alice_ephemeral_pub = PublicKey(received_ephemeral_bytes, encoder=RawEncoder)
+bob_box = Box(bob_private, alice_ephemeral_pub)
+
+# 3. Decrypt — XSalsa20-Poly1305 authenticates and decrypts in one step
+plaintext = bob_box.decrypt(received_ciphertext)
+print(f"Decrypted: {plaintext.decode('utf-8')}")</code></pre>
+                </div>
+
+                <h3>Full Roundtrip Demo</h3>
+                <p>A complete self-contained example that generates keys and demonstrates the full
+                    encrypt → transmit → decrypt lifecycle:</p>
+                <div class="code-block">
+                    <pre><code class="lang-python">from nacl.public import PrivateKey, Box
+from nacl.encoding import HexEncoder
+
+# === Setup: Bob registers his static key on-chain ===
+bob_static_private = PrivateKey.generate()
+bob_static_public = bob_static_private.public_key
+print(f"Bob registered: {bob_static_public.encode(encoder=HexEncoder).decode()}")
+
+# === Alice encrypts a message for Bob ===
+alice_ephemeral = PrivateKey.generate()
+alice_box = Box(alice_ephemeral, bob_static_public)
+encrypted = alice_box.encrypt(b"Secure P2P delivery verified.")
+print(f"Alice encrypted: {len(encrypted)} bytes")
+
+# === Bob decrypts using his static key + Alice's ephemeral public ===
+bob_box = Box(bob_static_private, alice_ephemeral.public_key)
+plaintext = bob_box.decrypt(encrypted)
+print(f"Bob decrypted: '{plaintext.decode()}'")
+# Output: Bob decrypted: 'Secure P2P delivery verified.'</code></pre>
+                </div>
+
+                <div class="docs-callout warning">
+                    <i class='bx bx-shield-quarter'></i>
+                    <div>
+                        <strong>Forward Secrecy</strong>
+                        Each message uses a fresh ephemeral keypair. Compromising a sender's ephemeral private key
+                        only exposes that single message — not past or future communications. Bob's static key
+                        remains safe on disk.
+                    </div>
+                </div>
+            </section>
+
+            <!-- Direct vs Sync-Engine -->
+            <section id="direct-vs-store">
+                <h2>Direct P2P vs Sync-Engine</h2>
+                <p>
+                    Hermes offers two data transfer modes. Choose based on your use case:
+                </p>
+
+                <div class="docs-table-wrap">
+                    <table class="docs-table">
+                        <thead>
+                            <tr>
+                                <th>Feature</th>
+                                <th>Direct P2P</th>
+                                <th>Sync-Engine</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Transport</td>
+                                <td>QUIC bi-stream (<code>hippius-hermes/data/1</code>)</td>
+                                <td>HTTP upload/download via Arion</td>
+                            </tr>
+                            <tr>
+                                <td>Intermediary</td>
+                                <td>None &mdash; pure P2P</td>
+                                <td>Hippius Sync-Engine server</td>
+                            </tr>
+                            <tr>
+                                <td>Receiver must be online</td>
+                                <td>Yes &mdash; at time of send</td>
+                                <td>No &mdash; stored until retrieved</td>
+                            </tr>
+                            <tr>
+                                <td>Best for</td>
+                                <td>Real-time streaming: gradients, tensors, live data</td>
+                                <td>Large persistent payloads: model weights, datasets</td>
+                            </tr>
+                            <tr>
+                                <td>API (Python)</td>
+                                <td><code>send_file_unencrypted()</code></td>
+                                <td><code>send_file_via_s3()</code></td>
+                            </tr>
+                            <tr>
+                                <td>Receiving</td>
+                                <td>Automatic via <code>on_data</code> callback</td>
+                                <td>Explicit <code>download_file_http()</code></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="docs-callout tip">
+                    <i class='bx bx-bulb'></i>
+                    <div>
+                        <strong>Use both together.</strong>
+                        For many workloads, you'll use Direct P2P for real-time gradient exchange during training,
+                        and the Sync-Engine for distributing finalized model checkpoints. Both modes work on
+                        the same Hermes client.
+                    </div>
+                </div>
+            </section>
+
+            <!-- S3 Pre-Signed Downloads -->
+            <section id="s3-downloads">
+                <h2>S3 Pre-Signed Downloads</h2>
+                <p>
+                    For transmitting incredibly large multi-gigabyte models (e.g. LLM checkpoints), the Hippius
+                    Sync-Engine HTTP API can become a minor bottleneck because it streams data through the Arion servers
+                    for billing verification.
+                </p>
+                <p>
+                    <strong>Hermes solves this by allowing Sender nodes to pre-sign native Amazon S3 GET queries
+                        perfectly offline.</strong>
+                </p>
+
+                <div class="docs-steps">
+                    <div class="docs-step">
+                        <div class="docs-step-num">1</div>
+                        <div>
+                            <strong>Offline Generation</strong>
+                            <p>The Sender node (configured with S3 API keys) generates an S3 Pre-Signed URL for the file
+                                valid for exactly 24 hours, entirely locally without making any network calls to AWS.
+                            </p>
+                        </div>
+                    </div>
+                    <div class="docs-step">
+                        <div class="docs-step-num">2</div>
+                        <div>
+                            <strong>Encrypted P2P Transmission</strong>
+                            <p>The Sender injects this raw Pre-Signed URL into the
+                                <code>hermes.message(dest, payload)</code> control packet. It transmits to the receiver
+                                instantly over the encrypted Iroh Control Plane.
+                            </p>
+                        </div>
+                    </div>
+                    <div class="docs-step">
+                        <div class="docs-step-num">3</div>
+                        <div>
+                            <strong>Direct Bucket Streaming</strong>
+                            <p>The Receiver intercepts the control message payload, extracts the URL, and invokes the
+                                Rust <code>download_file_http</code> async method to pull the 10GB payload straight from
+                                the cloud bucket to disk at maximum line speed (10+ Gbps).</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="docs-callout warning">
+                    <i class='bx bx-key'></i>
+                    <div>
+                        <strong>Receivers do NOT need S3 Configs.</strong>
+                        The beauty of this architecture is that your Miners/Receivers do not need <em>any</em> AWS IAM
+                        Credentials or S3 configuration. The sender handles all authorization via the cryptographic
+                        signature glued precisely onto the ephemeral GET URL.
+                    </div>
+                </div>
+            </section>
+
+            <!-- PullWeights Model Registry -->
+            <section id="pullweights">
+                <h2>PullWeights Model Registry</h2>
+                <p>
+                    Hippius Hermes natively integrates with the <strong>PullWeights</strong> enterprise model registry,
+                    allowing seamless pushing and pulling of machine learning models via the CLI.
+                </p>
+
+                <div class="docs-callout tip">
+                    <i class='bx bx-cloud-upload'></i>
+                    <div>
+                        <strong>Configuring API Keys</strong>
+                        To push models, you must inject your PullWeights API key into your
+                        <code>hermes_config.json</code> under the <code>pullweights_api_key</code> field.
+                    </div>
+                </div>
+
+                <h3>Pushing a Model</h3>
+                <p>You can push a local model direct to the PullWeights registry via the CLI:</p>
+                <pre><code class="lang-bash">hippius-hermes-cli push-model \
+  --org my-org \
+  --model my-llm \
+  --file-path ./model.safetensors</code></pre>
+
+                <h3>Pulling a Model</h3>
+                <p>You can instantly pull specific tags down to your local directory (defaulting to the current working
+                    directory). Unauthenticated pulling is supported for public models, but private models utilize your
+                    <code>pullweights_api_key</code>.
+                </p>
+                <pre><code class="lang-bash">hippius-hermes-cli pull-model \
+  --org my-org \
+  --model my-llm \
+  --tag v1.0.0 \
+  --download-dir /mnt/models</code></pre>
+
+            </section>
+
+            <!-- Python API -->
+            <section id="python-api">
+                <h2>Python API</h2>
+
+                <h3>Config</h3>
+                <pre><code class="lang-python">from hermes import Config
+
+# From keyword arguments
+config = Config(
+    node_secret_key_path="/etc/hermes/iroh.key",
+    ss58_address="5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
+    api_token="sk-your-token",
+    storage_directory=".hermes_data",
+    rpc_url=None,              # Optional, defaults to wss://rpc.hippius.network:443
+    subnet_ids=[42, 69],       # Optional, defaults to []
+    s3_bucket="my-models",     # Optional S3 Bypass
+    s3_access_key="AKIA...",
+    s3_secret_key="AWS...",
+    enable_firewall=True,      # Optional O(1) TLS connection dropping
+    pullweights_api_key="sk-...", # Optional PullWeights token
+    enable_queue=True,         # Optional persistent sled message queue
+    encryption_key_path="./hermes_encryption.key"  # Optional E2E encryption key
+)
+
+# From JSON file
+config = Config.from_file("hermes_config.json")</code></pre>
+
+                <h3>HermesClient</h3>
+                <pre><code class="lang-python">from hermes import Config, HermesClient
+
+# Create client (async)
+client = await HermesClient.create(config)
+
+# Upload to S3 and send Pre-Signed URL to peer (No Sync-Engine)
+await client.send_file_via_s3(dest_ss58, "./model.bin")
+
+# Download from a Pre-Signed URL
+await client.download_file_http(presigned_url, "./model.bin")
+
+# Update the memory firewall (drops unauthorized TLS at O(1))
+resolved = await client.set_firewall_whitelist(["5Grwv...", "5FHne..."])
+
+# Global ACL: blocklist / allowlist (applies to all ALPNs)
+await client.set_acl_blocklist(["5BadActor..."])
+await client.set_acl_allowlist(["5Trusted1...", "5Trusted2..."])
+
+# Start listener (callback receives action, sender_ss58, payload_bytes)
+def on_message(action, sender_ss58, payload):
+    print(f"From {sender_ss58}: {action}")
+
+client.start_listener(on_message)
+
+# Direct P2P file transfer
+filename = await client.send_file_unencrypted(dest_ss58, file_path)
+
+# Start listener with data callback for direct P2P
+def on_file(sender_ss58, filename, local_path, file_size):
+    print(f"Got {filename} from {sender_ss58}")
+
+client.start_listener(on_message, on_data=on_file)
+
+# Send E2E encrypted message (NaCl SealedBox)
+await client.send_message_encrypted(dest_ss58, b"secret payload")
+
+# Start background retry worker (requires enable_queue=True in config)
+client.start_retry_worker()</code></pre>
+            </section>
+
+            <!-- Rust API -->
+            <section id="rust-api">
+                <h2>Rust API</h2>
+
+                <h3>Config</h3>
+                <pre><code class="lang-rust">use hippius_hermes_core::Config;
+use std::path::PathBuf;
+
+let config = Config {
+    node_secret_key_path: PathBuf::from("/etc/hermes/iroh.key"),
+    ss58_address: "5GrwvaEF5zXb26...".to_string(),
+    api_token: "sk-your-token".to_string(),
+    storage_directory: PathBuf::from(".hermes_data"),
+    rpc_url: "wss://rpc.hippius.network:443".to_string(),
+    subnet_ids: vec![42, 69],
+    enable_firewall: true,
+    s3: Some(hippius_hermes_core::config::S3Config {
+        bucket: "my-models".into(),
+        access_key: "AKIA...".into(),
+        secret_key: "AWS...".into(),
+    }),
+    pullweights_api_key: Some("sk-...".to_string()),
+    skip_identity_verification: false,
+    enable_queue: false,
+    encryption_key_path: Some(PathBuf::from("./hermes_encryption.key")),
+};</code></pre>
+
+                <h3>Client</h3>
+                <pre><code class="lang-rust">use hippius_hermes_core::Client;
+
+let client = Client::new(config).await?;
+
+// Upload to S3 and send Pre-Signed URL to peer
+client.send_file_via_s3("5Dest...", "./model.bin", None).await?;
+
+// Download from a Pre-Signed URL
+client.download_file_http("https://...", "./model.bin").await?;
+
+// Update the memory firewall (drops unauthorized TLS at O(1))
+let resolved = client.set_firewall_whitelist(vec!["5Grwv...".into(), "5FHne...".into()]).await;
+
+// Global ACL
+client.set_acl_blocklist(vec!["5Bad...".into()]).await;
+client.set_acl_allowlist(vec!["5Good...".into()]).await;
+
+// Start listener (control callback + optional data callback)
+client.spawn_listener(
+    |msg| println!("From {}: {}", msg.sender_ss58, msg.action),
+    None::&lt;fn(String, String, String, u64)&gt;,
+);
+
+// Direct P2P file transfer
+let filename = client
+    .send_file_unencrypted(dest_ss58, file_path, None)
+    .await?;
+
+// Start listener with data callback
+client.spawn_listener(
+    |msg| println!("Control: {}", msg.action),
+    Some(|sender: String, filename: String, path: String, size: u64| {
+        println!("File: {} from {}", filename, sender);
+    }),
+);
+
+// Send E2E encrypted message (NaCl SealedBox)
+client.send_message_encrypted("5Dest...", b"secret payload", None).await?;
+
+// Start background retry worker (requires enable_queue in config)
+client.spawn_retry_worker();</code></pre>
+
+                <h3>ALPN Utilities</h3>
+                <pre><code class="lang-rust">use hippius_hermes_core::network::node::{
+    CROSS_SUBNET_ALPN, subnet_alpn, build_alpn_list
+};
+
+// Cross-subnet constant
+assert_eq!(CROSS_SUBNET_ALPN, b"hippius-hermes/1");
+
+// Build per-subnet ALPN
+let alpn = subnet_alpn(42);
+assert_eq!(alpn, b"hippius-hermes/subnet/42");
+
+// Build full ALPN list from config
+let alpns = build_alpn_list(&[42, 69]);
+// Returns: ["hippius-hermes/1", "hippius-hermes/subnet/42", "hippius-hermes/subnet/69"]</code></pre>
+            </section>
+
+            <!-- CLI Reference -->
+            <section id="cli-reference">
+                <h2>CLI Reference</h2>
+                <p>
+                    Hermes provides a native Rust CLI for generating deterministic keys, running a listener daemon,
+                    and testing direct P2P transfers from the terminal.
+                </p>
+
+                <h3>1. Key Generation</h3>
+                <p>Generate a secure, random Iroh secret key (NodeId) for your Hermes installation:</p>
+                <pre><code class="lang-bash">cargo run --bin hippius-hermes-cli -- keygen \
+    --out-path examples/iroh.key</code></pre>
+
+                <h3>2. Backup / Reveal NodeId</h3>
+                <p>Read an existing Iroh secret key from disk and print its corresponding public NodeId. Send this
+                    NodeId to peers so they can resolve your address offline.</p>
+                <pre><code class="lang-bash">cargo run --bin hippius-hermes-cli -- backup-key \
+    --key-path examples/iroh.key</code></pre>
+
+                <h3>3. Start Listener</h3>
+                <p>Start the Hermes daemon to listen for cross-subnet control messages and direct P2P file transfers:
+                </p>
+                <pre><code class="lang-bash">cargo run --bin hippius-hermes-cli -- --config examples/hermes_config.json listen</code></pre>
+
+                <h3>4. Send File Directly</h3>
+                <p>Push a file directly to a peer over QUIC (bypassing the Sync-Engine). For offline testing without the
+                    node tracker chain, explicitly provide the receiver's NodeId.</p>
+                <pre><code class="lang-bash">cargo run --bin hippius-hermes-cli -- --config examples/sender_config.json send-direct \
+    --dest-ss58 5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY \
+    --peer-node-id &lt;RECEIVER_NODE_ID&gt; \
+    --file-path ./model.bin</code></pre>
+
+                <h3>5. Send Encrypted Message</h3>
+                <p>Send an E2E encrypted message using NaCl SealedBox. The recipient's encryption key is resolved from
+                    the
+                    on-chain AccountProfile pallet.</p>
+                <pre><code class="lang-bash">cargo run --bin hippius-hermes-cli -- --config examples/sender_config.json send-encrypted \
+    --dest-ss58 5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY \
+    --message "top secret payload"</code></pre>
+
+                <h3>6. Send via S3</h3>
+                <p>Upload a file to S3, generate a pre-signed URL, and send it to the peer over QUIC.</p>
+                <pre><code class="lang-bash">cargo run --bin hippius-hermes-cli -- --config examples/sender_config.json send-via-s3 \
+    --dest-ss58 5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY \
+    --file-path ./large_model.bin</code></pre>
+
+                <h3>7. Upload to S3</h3>
+                <p>Upload a file directly to your configured S3 bucket without sending it to a peer.</p>
+                <pre><code class="lang-bash">cargo run --bin hippius-hermes-cli -- --config examples/sender_config.json upload-s3 \
+    --file-path ./model.bin</code></pre>
+
+                <h3>8. Download from URL</h3>
+                <p>Download a file from a pre-signed URL (or any HTTP URL) to a local path.</p>
+                <pre><code class="lang-bash">cargo run --bin hippius-hermes-cli -- download-url \
+    --url "https://s3.example.com/model.bin?X-Amz-..." \
+    --output ./model.bin</code></pre>
+
+                <h3>9. Register Node</h3>
+                <p>Register your node's Iroh NodeId and encryption public key on the Hippius blockchain.</p>
+                <pre><code class="lang-bash">cargo run --bin hippius-hermes-cli -- --config examples/hermes_config.json register</code></pre>
+
+                <h3>10. Push Model</h3>
+                <p>Push a local model directory to the PullWeights registry.</p>
+                <pre><code class="lang-bash">cargo run --bin hippius-hermes-cli -- --config examples/hermes_config.json push-model \
+    --org my-org \
+    --model my-llm \
+    --tag v1.0.0 \
+    --dir ./model_weights</code></pre>
+
+                <h3>11. Pull Model</h3>
+                <p>Pull a model from the PullWeights registry to a local directory.</p>
+                <pre><code class="lang-bash">cargo run --bin hippius-hermes-cli -- pull-model \
+    --org my-org \
+    --model my-llm \
+    --tag v1.0.0 \
+    --download-dir /mnt/models</code></pre>
+            </section>
+
+            <!-- Example: Single Subnet -->
+            <section id="example-single">
+                <h2>Example: Single Subnet Node</h2>
+                <p>A miner that only participates in subnet 42:</p>
+                <pre><code class="lang-python">import asyncio
+from hermes import Config, HermesClient
+
+async def main():
+    config = Config(
+        node_secret_key_path="/etc/hermes/iroh.key",
+        ss58_address="5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
+        api_token="sk-your-token",
+        storage_directory=".hermes_data",
+        subnet_ids=[42]  # Only accept subnet-42 and cross-subnet traffic
+    )
+
+    client = await HermesClient.create(config)
+    # Node now accepts: hippius-hermes/1 + hippius-hermes/subnet/42
+
+    def on_message(action, sender_ss58, payload):
+        print(f"[Subnet 42] {sender_ss58}: {action}")
+
+    client.start_listener(on_message)
+    client.start_retry_worker()
+
+    # Keep alive
+    while True:
+        await asyncio.sleep(3600)
+
+if __name__ == "__main__":
+    asyncio.run(main())</code></pre>
+            </section>
+
+            <!-- Example: Multiple Subnets -->
+            <section id="example-multi">
+                <h2>Example: Multi-Subnet Validator</h2>
+                <p>
+                    A validator participating in subnets 1, 42, and 69 simultaneously. Incoming connections
+                    on any of these subnet-specific protocols are accepted.
+                </p>
+                <pre><code class="lang-python">import asyncio
+from hermes import Config, HermesClient
+
+async def main():
+    config = Config(
+        node_secret_key_path="/etc/hermes/iroh.key",
+        ss58_address="5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty",
+        api_token="sk-validator-token",
+        storage_directory="/var/hermes",
+        subnet_ids=[1, 42, 69]  # Accept traffic from all three subnets
+    )
+
+    client = await HermesClient.create(config)
+    # Node accepts: hippius-hermes/1, hippius-hermes/subnet/1, hippius-hermes/subnet/42, hippius-hermes/subnet/69
+
+    def handle_message(action, sender_ss58, payload):
+        print(f"[Multi-Subnet Validator] {action} from {sender_ss58}")
+        # Route based on action or parse payload metadata
+        if action == "process_data_unencrypted_store":
+            import json
+            meta = json.loads(payload)
+            print(f"  HCFS Hash: {meta['hash']}")
+
+    client.start_listener(handle_message)
+    client.start_retry_worker()
+
+    while True:
+        await asyncio.sleep(3600)
+
+if __name__ == "__main__":
+    asyncio.run(main())</code></pre>
+            </section>
+
+            <!-- Example: Cross-Subnet -->
+            <section id="example-cross">
+                <h2>Example: Cross-Subnet Communication</h2>
+                <p>
+                    Two nodes on different subnets communicating via the universal <code>hippius-hermes/1</code>
+                    protocol. This works regardless of <code>subnet_ids</code> configuration.
+                </p>
+                <pre><code class="lang-python">import asyncio
+from hermes import Config, HermesClient
+
+async def main():
+    # This node is on subnet 42 but needs to talk to subnet 69
+    config = Config(
+        node_secret_key_path="/etc/hermes/iroh.key",
+        ss58_address="5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
+        api_token="sk-your-token",
+        storage_directory=".hermes_data",
+        subnet_ids=[42]
+    )
+
+    client = await HermesClient.create(config)
+
+    # send_file_unencrypted uses hippius-hermes/data/1 (direct P2P QUIC).
+    # The receiver accepts hippius-hermes/1 regardless of their subnet_ids config.
+    dest_ss58 = "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty"
+    filename = await client.send_file_unencrypted(
+        dest_ss58,
+        "./gradients.safetensors"
+    )
+    print(f"Sent cross-subnet! File: {filename}")
+
+if __name__ == "__main__":
+    asyncio.run(main())</code></pre>
+            </section>
+
+            <!-- Example: Rust -->
+            <section id="example-rust">
+                <h2>Example: Rust Multi-Subnet Node</h2>
+                <pre><code class="lang-rust">use hippius_hermes_core::{Client, Config};
+use std::path::PathBuf;
+
+#[tokio::main]
+async fn main() -> anyhow::Result&lt;()&gt; {
+    let config = Config::from_file("hermes_config.json")?;
+    // Or construct manually:
+    // let config = Config {
+    //     node_secret_key_path: PathBuf::from("/etc/hermes/iroh.key"),
+    //     ss58_address: "5GrwvaEF...".to_string(),
+    //     ...
+    // };
+
+    let client = Client::new(config).await?;
+    // Node accepts: hippius-hermes/1, hippius-hermes/subnet/42, hippius-hermes/subnet/69
+
+    client.spawn_listener(
+        |msg| println!("[Hermes] {} from {}", msg.action, msg.sender_ss58),
+        None::&lt;fn(String, String, String, u64)&gt;,
+    );
+
+    client.spawn_retry_worker();
+
+    // Keep alive
+    loop {
+        tokio::time::sleep(tokio::time::Duration::from_secs(3600)).await;
+    }
+}</code></pre>
+            </section>
+        </div>
+    </main>
+
+    <footer class="docs-footer">
+        <p class="copyright">&copy; 2026 The Hippius Project.</p>
+    </footer>
+
+    <script>
+        // Sidebar active link tracking
+        const sections = document.querySelectorAll('.docs-content section[id]');
+        const navLinks = document.querySelectorAll('.docs-nav a');
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    navLinks.forEach(link => link.classList.remove('active'));
+                    const activeLink = document.querySelector(`.docs-nav a[href="#${entry.target.id}"]`);
+                    if (activeLink) activeLink.classList.add('active');
+                }
+            });
+        }, { rootMargin: '-20% 0px -80% 0px' });
+
+        sections.forEach(section => observer.observe(section));
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,68 @@
+# Rust
+/target/
+**/target/
+**/*.rs.bk
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+*.egg
+dist/
+build/
+*.whl
+*.so
+*.dylib
+*.pyd
+
+# Maturin / PyO3
+/wheels/
+
+# Virtual environments
+.venv/
+venv/
+env/
+node_modules/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Hermes runtime data
+.hermes_data/
+.sender_data/
+hermes_queue.db/
+downloads/
+
+# Secrets / config with tokens
+hermes_config.json
+.env
+.env*
+*.secret
+*.pem
+
+# Secret key files
+*.key
+iroh.key
+model.bin
+examples/sender_config.json
+examples/hermes_config.json
+
+# Logs
+*.log
+
+# Build config (platform-specific)
+.cargo/
+
+# Claude Code
+CLAUDE.md
+.claude
+hippius-hermes.md

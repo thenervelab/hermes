@@ -1,0 +1,7 @@
+{
+    "node_secret_key_path": "./examples/sender.key",
+    "ss58_address": "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty",
+    "api_token": "sk-your-hippius-token-here",
+    "storage_directory": ".sender_data",
+    "subnet_ids": []
+}

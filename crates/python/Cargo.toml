@@ -1,0 +1,21 @@
+[package]
+name = "hippius-hermes-python"
+version = "0.1.0"
+edition = "2021"
+description = "Python bindings for hippius-hermes-core"
+license = "MIT"
+repository = "https://github.com/thenervelab/hermes"
+homepage = "https://hermes.hippius.com"
+authors = ["The Hippius Project <https://hippius.com>"]
+
+[lib]
+name = "hermes"
+crate-type = ["cdylib"]
+
+[dependencies]
+pyo3 = { version = "0.20", features = ["extension-module", "abi3-py38"] }
+pyo3-asyncio = { version = "0.20", features = ["tokio-runtime"] }
+tokio = { version = "1.35", features = ["full"] }
+
+hippius-hermes-core = { path = "../core" }
+reqwest = "0.11"

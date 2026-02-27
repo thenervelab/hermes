@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hippius Hermes | The P2P Data Messenger</title>
+    <meta name="description"
+        content="Bittensor cross-subnet M2M communication protocol. Direct P2P QUIC streaming and Sync-Engine for 100GB+ workloads across subnets.">
+
+    <!-- OpenGraph -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Hippius Hermes">
+    <meta property="og:description"
+        content="Bittensor cross-subnet M2M protocol. Direct P2P QUIC streaming and Sync-Engine for massive workloads.">
+    <meta property="og:url" content="https://hermes.hippius.com">
+    <meta property="og:image" content="https://hermes.hippius.com/og-image.png">
+    <meta property="og:site_name" content="Hippius Hermes">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Hippius Hermes">
+    <meta name="twitter:description"
+        content="Bittensor cross-subnet M2M protocol. Direct P2P QUIC streaming and Sync-Engine for massive workloads.">
+    <meta name="twitter:image" content="https://hermes.hippius.com/og-image.png">
+
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=SF+Mono:wght@400;500&display=swap"
+        rel="stylesheet">
+
+    <!-- BoxIcons -->
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <!-- Ambient Background Blobs -->
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+
+    <!-- Navbar -->
+    <nav class="navbar animate-fade-in">
+        <div class="nav-pill clay-surface">
+            <div class="logo">
+                <i class='bx bx-hive'></i>
+                <span>Hippius Hermes</span>
+            </div>
+            <div class="nav-links">
+                <a href="#architecture">Architecture</a>
+                <a href="#developer">Developer</a>
+                <a href="#encryption">Encryption</a>
+                <a href="docs.html">Docs</a>
+                <a href="https://github.com/thenervelab/hermes" target="_blank" class="btn-clean">GitHub</a>
+            </div>
+            <div class="menu-toggle" id="mobile-menu">
+                <i class='bx bx-menu'></i>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header class="hero">
+        <div class="hero-text-container animate-slide-up">
+            <div class="badge clay-surface">Hermes v0.1 — Early Access</div>
+            <h1 class="hero-title">Beautifully simple.<br><span class="text-gradient">Massively scalable.</span></h1>
+            <p class="hero-subtitle">
+                A seamless Machine-to-Machine protocol with direct P2P QUIC streaming and the Arion Sync-Engine,
+                securely routing 100GB+ workloads across Subnets.
+            </p>
+            <div class="hero-ctas">
+                <div class="terminal-pill clay-surface" id="copy-snippet">
+                    <span class="prompt">$</span> pip install hippius-hermes
+                    <i class='bx bx-copy copy-icon'></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Enhanced Animated Data Flow Viz -->
+        <div class="hero-visual animate-slide-up-delayed">
+            <div class="viz-container">
+                <svg class="viz-svg" viewBox="0 0 1000 400" preserveAspectRatio="xMidYMid meet">
+                    <!-- Control Plane Array (De-emphasized) -->
+                    <path class="flow-line flow-control" d="M 140 200 C 340 20, 660 20, 860 200"
+                        style="fill: transparent !important;" stroke="#8e44ad" stroke-opacity="0.5" stroke-width="2" />
+                    <!-- P2P Control Plane Text above arch -->
+                    <text class="path-label control-label" text-anchor="middle" x="500" y="30" fill="#8e44ad"
+                        opacity="0.8">P2P CONTROL PLANE</text>
+
+                    <!-- Data Plane Array (Arion - Emphasized) -->
+                    <!-- Bottom Arch Background Track -->
+                    <path class="flow-track arion-pulse" d="M 140 200 C 340 380, 660 380, 860 200"
+                        style="fill: transparent !important;" stroke="#0066cc" stroke-opacity="0.10"
+                        stroke-width="12" />
+                    <!-- Bottom Arch Active Data Segments -->
+                    <path class="flow-line flow-data" d="M 140 200 C 340 380, 660 380, 860 200"
+                        style="fill: transparent !important;" stroke="#0066cc" stroke-width="12" />
+                    <!-- Data Protocol Text -->
+                    <text class="path-label data-label" text-anchor="middle" x="500" y="360" fill="#0066cc"
+                        font-size="14px" font-weight="700">Hippius Arion Protocol (Massive Payloads)</text>
+                </svg>
+
+                <!-- Floating Data Packets (White Cubes) -->
+                <div class="floating-packet cube cube-1"></div>
+                <div class="floating-packet cube cube-2"></div>
+                <div class="floating-packet cube cube-3"></div>
+
+                <!-- Nodes -->
+                <div class="viz-node node-left clay-surface animate-float">
+                    <div class="node-icon"><i class='bx bx-server'></i></div>
+                    <div class="node-label">Sender</div>
+                </div>
+
+                <div class="viz-node node-right clay-surface animate-float-delayed">
+                    <div class="node-icon"><i class='bx bx-laptop'></i></div>
+                    <div class="node-label">Receiver</div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Architecture / Bento Grid -->
+    <section id="architecture" class="bento-section">
+        <div class="section-heading reveal-on-scroll">
+            <h2>The Power of Arion.</h2>
+            <p>A flawless synchronization engine for massive datasets.</p>
+        </div>
+
+        <div class="bento-grid">
+            <!-- Arion Data Transfer Card -->
+            <div class="bento-card card-wide clay-surface reveal-on-scroll scale-up has-viz">
+                <div class="bento-viz viz-arion">
+                    <div class="widget-transfer">
+                        <div class="widget-header">
+                            <i class='bx bxl-python'></i> <span>hermes.send()</span>
+                        </div>
+                        <div class="widget-body">
+                            <div class="file-info">
+                                <i class='bx bxs-file-archive'></i>
+                                <div class="details">
+                                    <span class="name">llama-3-70b.safetensors</span>
+                                    <span class="size">140.2 GB</span>
+                                </div>
+                            </div>
+                            <div class="progress-bar-container">
+                                <div class="progress-bar-fill animate-progress"></div>
+                            </div>
+                            <div class="transfer-stats">
+                                <span class="speed">4.2 GB/s</span>
+                                <span class="protocol">Arion Sync-Engine <i class='bx bx-check-shield'></i></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="bento-content">
+                    <h3>Hippius Arion Protocol</h3>
+                    <p>Two data paths for maximum flexibility: stream files directly between peers via QUIC for
+                        real-time
+                        gradient exchange, or route 100GB+ tensor payloads through the Arion Sync-Engine for persistent
+                        storage. NaCl SealedBox encryption (X25519 + XSalsa20-Poly1305) in Rust before data hits the wire.</p>
+                </div>
+            </div>
+
+            <!-- Hippius Messaging Card -->
+            <div class="bento-card clay-surface reveal-on-scroll has-viz">
+                <div class="bento-viz viz-iroh">
+                    <div class="widget-nodes">
+                        <div class="node-avatar peer-1"><i class='bx bx-laptop'></i></div>
+                        <div class="node-connection">
+                            <div class="connection-line">
+                                <div class="photon photon-1"></div>
+                                <div class="photon photon-2"></div>
+                            </div>
+                            <div class="encryption-key"><i class='bx bx-key'></i></div>
+                        </div>
+                        <div class="node-avatar peer-2"><i class='bx bx-server'></i></div>
+                    </div>
+                </div>
+                <div class="bento-content">
+                    <h3>Hippius Control Plane</h3>
+                    <p>Lightning-fast peer-to-peer signaling over QUIC. E2E encrypted signaling via NaCl SealedBox between
+                        Node IDs.</p>
+                </div>
+            </div>
+
+            <!-- Direct P2P Data Card -->
+            <div class="bento-card clay-surface reveal-on-scroll has-viz">
+                <div class="bento-viz viz-iroh">
+                    <div class="widget-nodes">
+                        <div class="node-avatar peer-1"><i class='bx bx-server'></i></div>
+                        <div class="node-connection">
+                            <div class="connection-line">
+                                <div class="photon photon-1"></div>
+                                <div class="photon photon-2"></div>
+                            </div>
+                            <div class="encryption-key"><i class='bx bx-transfer'></i></div>
+                        </div>
+                        <div class="node-avatar peer-2"><i class='bx bx-server'></i></div>
+                    </div>
+                </div>
+                <div class="bento-content">
+                    <h3>Direct P2P Streaming</h3>
+                    <p>Push files directly between peers over QUIC bi-streams. No HTTP intermediary, no
+                        storage server. Ideal for real-time gradient exchange and live tensor data.</p>
+                </div>
+            </div>
+
+            <!-- Arion Storage Card -->
+            <div class="bento-card clay-surface reveal-on-scroll has-viz">
+                <div class="bento-viz viz-iroh">
+                    <div class="widget-nodes">
+                        <div class="node-avatar peer-1"><i class='bx bx-server'></i></div>
+                        <div class="node-connection">
+                            <div class="connection-line">
+                                <div class="photon photon-1"></div>
+                                <div class="photon photon-2"></div>
+                            </div>
+                            <div class="encryption-key"><i class='bx bx-cloud-upload'></i></div>
+                        </div>
+                        <div class="node-avatar peer-2"><i class='bx bx-data'></i></div>
+                    </div>
+                </div>
+                <div class="bento-content">
+                    <h3>Arion Decentralized Storage</h3>
+                    <p>Store and retrieve files on Hippius Arion — a decentralized storage network. Persist
+                        model weights, datasets, and checkpoints without centralized servers.</p>
+                </div>
+            </div>
+
+            <!-- S3 Pre-Signed Downloads Card -->
+            <div class="bento-card clay-surface reveal-on-scroll has-viz">
+                <div class="bento-viz viz-iroh">
+                    <div class="widget-nodes">
+                        <div class="node-avatar peer-1"><i class='bx bx-data'></i></div>
+                        <div class="node-connection">
+                            <div class="connection-line">
+                                <div class="photon photon-1"></div>
+                                <div class="photon photon-2"></div>
+                            </div>
+                            <div class="encryption-key"><i class='bx bx-link-external'></i></div>
+                        </div>
+                        <div class="node-avatar peer-2"><i class='bx bx-laptop'></i></div>
+                    </div>
+                </div>
+                <div class="bento-content">
+                    <h3>Native S3 Pre-Signed URLs</h3>
+                    <p>Automatically generate cryptographic Pre-Signed GET URLs valid for 24 hours. Transmit URLs
+                        natively over Iroh QUIC so miners can download massive payloads directly from S3 without bucket
+                        credentials.</p>
+                </div>
+            </div>
+
+            <!-- Deterministic Identity Card -->
+            <div class="bento-card card-wide clay-surface reveal-on-scroll has-viz">
+                <div class="bento-viz viz-identity">
+                    <div class="widget-id-card tilt-hover">
+                        <div class="id-header">
+                            <i class='bx bx-shape-polygon'></i> <span>SS58 Identity</span>
+                        </div>
+                        <div class="id-body">
+                            <div class="id-avatar"><i class='bx bx-fingerprint'></i></div>
+                            <div class="id-lines">
+                                <div class="id-line short"></div>
+                                <div class="id-line long"></div>
+                            </div>
+                        </div>
+                        <div class="id-footer">
+                            <div class="hash">5GrwvaEF5zXb26...</div>
+                            <i class='bx bx-check-circle verified'></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="bento-content">
+                    <h3>Deterministic Identity</h3>
+                    <p>Node identity loads directly from your Ed25519 secret key file, mapped to your SS58 address
+                        via the on-chain AccountProfile pallet for cryptographic integrity.</p>
+                </div>
+            </div>
+
+            <!-- Offline Config Card -->
+            <div class="bento-card card-wide clay-surface reveal-on-scroll has-viz">
+                <div class="bento-viz viz-config">
+                    <div class="widget-code-editor">
+                        <div class="mac-dots">
+                            <span class="dot close"></span>
+                            <span class="dot min"></span>
+                            <span class="dot max"></span>
+                        </div>
+                        <div class="editor-content">
+                            <pre><code><span class="keyword">{</span>
+  <span class="string">"node_secret_key_path"</span><span class="keyword">:</span> <span class="string">"/etc/hermes/iroh.key"</span><span class="keyword">,</span>
+  <span class="string">"ss58_address"</span><span class="keyword">:</span> <span class="string">"5GrwvaEF..."</span><span class="keyword">,</span>
+  <span class="string">"api_token"</span><span class="keyword">:</span> <span class="string">"sk-live-..."</span><span class="keyword">,</span>
+  <span class="string">"storage_directory"</span><span class="keyword">:</span> <span class="string">"/var/hermes"</span><span class="keyword">,</span>
+  <span class="string">"subnet_ids"</span><span class="keyword">:</span> <span class="keyword">[</span><span class="function">42</span><span class="keyword">,</span> <span class="function">69</span><span class="keyword">]</span><span class="keyword">,</span>
+  <span class="string">"s3"</span><span class="keyword">:</span> <span class="keyword">{</span>
+    <span class="string">"bucket"</span><span class="keyword">:</span> <span class="string">"hippius-arion"</span><span class="keyword">,</span>
+    <span class="string">"access_key"</span><span class="keyword">:</span> <span class="string">"YOUR_KEY"</span><span class="keyword">,</span>
+    <span class="string">"secret_key"</span><span class="keyword">:</span> <span class="string">"YOUR_SECRET"</span>
+  <span class="keyword">}</span><span class="keyword">,</span>
+  <span class="string">"enable_firewall"</span><span class="keyword">:</span> <span class="keyword">true</span><span class="keyword">,</span>
+  <span class="string">"pullweights_api_key"</span><span class="keyword">:</span> <span class="string">"sk-pw-..."</span><span class="keyword">,</span>
+  <span class="string">"encryption_key_path"</span><span class="keyword">:</span> <span class="string">"./hermes_encryption.key"</span>
+<span class="keyword">}</span></code></pre>
+                        </div>
+                    </div>
+                </div>
+                <div class="bento-content">
+                    <h3>JSON Offline Configuration</h3>
+                    <p>Say goodbye to environment variable hell. Provision your Subnet Miners beautifully via the
+                        offline <code>hermes_config.json</code> standard, simplifying mass deployments.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- macOS Code Section -->
+    <section id="developer" class="code-section">
+        <div class="mac-window reveal-on-scroll">
+            <div class="mac-sidebar">
+                <div class="mac-dots">
+                    <span class="dot close"></span>
+                    <span class="dot min"></span>
+                    <span class="dot max"></span>
+                </div>
+                <ul class="mac-files">
+                    <li class="active"><i class='bx bx-file-blank'></i> subnet_integration.py</li>
+                    <li><i class='bx bx-code-alt'></i> hermes_config.json</li>
+                    <li><i class='bx bx-file-blank'></i> send_payload.py</li>
+                    <li><i class='bx bx-file-blank'></i> receive_payload.py</li>
+                    <li><i class='bx bx-file-blank'></i> send_direct.py</li>
+                    <li><i class='bx bx-file-blank'></i> send_s3.py</li>
+                    <li><i class='bx bx-file-blank'></i> receive_direct.py</li>
+                </ul>
+                <div class="mac-info">
+                    <h4>PyO3 Native Backend</h4>
+                    <p>Releases the Python GIL during heavy crypto.</p>
+                </div>
+            </div>
+            <div class="mac-editor">
+                <div class="editor-header">
+                    <span>subnet_integration.py</span>
+                </div>
+                <div class="editor-inner">
+                    <pre><code><span class="keyword">import</span> asyncio
+<span class="keyword">from</span> hermes <span class="keyword">import</span> Config, HermesClient
+
+<span class="keyword">async def</span> <span class="function">main</span>():
+    <span class="comment"># Load config with subnet whitelisting</span>
+    config = Config(
+        node_secret_key_path=<span class="string">"/etc/hermes/iroh.key"</span>,
+        ss58_address=<span class="string">"5GrwvaEF5zXb26Fz9rcQpDW..."</span>,
+        api_token=<span class="string">"sk-your-token"</span>,
+        storage_directory=<span class="string">".hermes_data"</span>,
+        subnet_ids=[<span class="function">42</span>, <span class="function">69</span>]  <span class="comment"># Accept traffic from subnets 42 &amp; 69</span>
+    )
+    client = <span class="keyword">await</span> HermesClient.create(config)
+
+    <span class="comment"># Send model weights directly via P2P QUIC</span>
+    filename = <span class="keyword">await</span> client.send_file_unencrypted(
+        <span class="string">"5FHneW46xGXgs5mUiveU4sbTy..."</span>,
+        <span class="string">"./model_weights.safetensors"</span>
+    )
+    <span class="function">print</span>(<span class="string">f"Sent! File: {filename}"</span>)
+
+<span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:
+    asyncio.run(main())</code></pre>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- E2EE Code Section -->
+    <section id="encryption" class="code-section">
+        <div class="section-heading reveal-on-scroll">
+            <h2>End-to-End Encrypted.</h2>
+            <p>On-chain public keys. Forward-secret payloads. Zero trust.</p>
+        </div>
+
+        <div class="mac-window reveal-on-scroll">
+            <div class="mac-sidebar">
+                <div class="mac-dots">
+                    <span class="dot close"></span>
+                    <span class="dot min"></span>
+                    <span class="dot max"></span>
+                </div>
+                <ul class="mac-files">
+                    <li class="active"><i class='bx bx-lock-alt'></i> e2e_encryption.py</li>
+                    <li><i class='bx bx-file-blank'></i> subnet_integration.py</li>
+                    <li><i class='bx bx-file-blank'></i> send_direct.py</li>
+                    <li><i class='bx bx-file-blank'></i> receive_payload.py</li>
+                </ul>
+                <div class="mac-info">
+                    <h4>Automated Trust</h4>
+                    <p>Hermes securely resolves Ephemeral X25519 + XSalsa20-Poly1305 keys under the hood.</p>
+                </div>
+            </div>
+            <div class="mac-editor">
+                <div class="editor-header">
+                    <span>e2e_encryption.py</span>
+                </div>
+                <div class="editor-inner">
+                    <pre><code><span class="keyword">import</span> asyncio
+<span class="keyword">from</span> hermes <span class="keyword">import</span> Config, HermesClient
+
+<span class="keyword">async def</span> <span class="function">main</span>():
+    config = Config.from_file(<span class="string">"hermes_config.json"</span>)
+    client = <span class="keyword">await</span> HermesClient.create(config)
+
+    <span class="comment"># Hermes natively automates the blockchain identity resolution</span>
+    <span class="comment"># and NaCl SealedBox encryption (X25519 + XSalsa20-Poly1305).</span>
+    <span class="keyword">await</span> client.send_message_encrypted(
+        <span class="string">"5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY"</span>,
+        <span class="string">b"top secret payload data"</span>
+    )
+    <span class="function">print</span>(<span class="string">"Payload securely encrypted and delivered!"</span>)
+
+<span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:
+    asyncio.run(main())</code></pre>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Clean Footer -->
+    <footer>
+        <div class="footer-content reveal-on-scroll">
+            <h2>Start building today.</h2>
+            <div class="footer-ctas">
+                <a href="https://hippius.com" target="_blank" class="btn-light">Visit hippius.com</a>
+                <a href="https://github.com/thenervelab/hermes" target="_blank" class="btn-dark">Clone on GitHub</a>
+            </div>
+            <p class="copyright">© 2026 The Hippius Project.</p>
+        </div>
+    </footer>
+
+    <script src="app_v2.js"></script>
+</body>
+
+</html>
