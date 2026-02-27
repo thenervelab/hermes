@@ -1,6 +1,6 @@
 [package]
 name = "hippius-hermes-core"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2021"
 description = "Bittensor cross-subnet M2M communication protocol over Iroh and Hippius"
 license = "MIT"

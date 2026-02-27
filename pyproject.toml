@@ -4,7 +4,7 @@ build-backend = "maturin"
 
 [project]
 name = "hippius-hermes"
-version = "0.1.0"
+version = "0.2.0"
 description = "High-performance M2M protocol for Bittensor subnets using Hippius Arion"
 readme = "README.md"
 license = { file = "LICENSE" }

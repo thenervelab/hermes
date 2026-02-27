@@ -2620,7 +2620,7 @@ dependencies = [
 
 [[package]]
 name = "hippius-hermes-cli"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "anyhow",
  "clap",
@@ -2645,7 +2645,7 @@ dependencies = [
 
 [[package]]
 name = "hippius-hermes-core"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "anyhow",
  "crypto_box",
@@ -2677,7 +2677,7 @@ dependencies = [
 
 [[package]]
 name = "hippius-hermes-python"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "hippius-hermes-core",
  "pyo3",
