@@ -10,5 +10,8 @@
         "secret_key": "YOUR_SECRET_KEY"
     },
     "enable_firewall": false,
-    "pullweights_api_key": null
+    "pullweights_api_key": null,
+    "enable_queue": false,
+    "encryption_key_path": null,
+    "skip_identity_verification": false
 }

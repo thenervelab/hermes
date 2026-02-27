@@ -30,6 +30,8 @@ async fn main() -> anyhow::Result<()> {
         s3: None,
         pullweights_api_key: None,
         skip_identity_verification: false,
+        enable_queue: false,
+        encryption_key_path: None,
     };
 
     let client = Client::new(config).await?;
@@ -44,10 +46,10 @@ async fn main() -> anyhow::Result<()> {
 
     println!("[*] Preparing to transmit payload to {}...", dest_ss58);
 
-    match client.send_file_unencrypted_to_store(dest_ss58, sample_file.to_str().unwrap(), None).await {
-        Ok(hash) => {
-            println!("\n[SUCCESS] Payload dispatched via Sync-Engine.");
-            println!("[SUCCESS] HCFS Download Hash: {}", hash);
+    match client.send_file_unencrypted(dest_ss58, sample_file.to_str().unwrap(), None).await {
+        Ok(filename) => {
+            println!("\n[SUCCESS] Payload sent directly via P2P QUIC.");
+            println!("[SUCCESS] Filename: {}", filename);
         }
         Err(e) => {
             println!("[-] Transmission failed or buffered offline: {}", e);

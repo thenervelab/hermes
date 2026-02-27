@@ -28,6 +28,8 @@ async fn main() -> anyhow::Result<()> {
         s3: None,
         pullweights_api_key: None,
         skip_identity_verification: false,
+        enable_queue: false,
+        encryption_key_path: None,
     };
 
     let client = Client::new(config).await?;

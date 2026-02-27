@@ -31,7 +31,7 @@ python python/subnet_integration.py
 ---
 
 ### 1. Sender (Broadcast Data & Keys)
-Demonstrates pushing a simulated massive payload, followed by a direct P2P Iroh message containing the AES decryption keys.
+Demonstrates pushing a simulated massive payload directly to a peer via P2P QUIC streaming.
 ```bash
 python python/send_payload.py
 ```
