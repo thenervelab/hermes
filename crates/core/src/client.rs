@@ -31,7 +31,6 @@ const MAX_CONTROL_MSG_BYTES: usize = 262_144;
 /// Maximum HTTP download size (10 GB).
 const MAX_DOWNLOAD_BYTES: u64 = 10 * 1024 * 1024 * 1024;
 
-
 /// The central Hermes Client that orchestrates Iroh P2P networking and the HTTP Sync-Engine.
 #[derive(Clone)]
 pub struct Client {
@@ -584,7 +583,10 @@ impl Client {
         let skip_identity_verification = self.config.skip_identity_verification;
         let acl = self.acl.clone();
         let enc_secret = self.encryption_secret.clone();
-        let enc_public = self.encryption_public.as_ref().map(|pk| Arc::new(pk.clone()));
+        let enc_public = self
+            .encryption_public
+            .as_ref()
+            .map(|pk| Arc::new(pk.clone()));
 
         tracing::info!("Spawning QUIC listener");
 
@@ -708,7 +710,9 @@ impl Client {
 
                         // Verify sender identity before writing any file to disk
                         let verified = if skip_identity_verification {
-                            tracing::warn!("DATA_ALPN: Identity verification SKIPPED (config flag)");
+                            tracing::warn!(
+                                "DATA_ALPN: Identity verification SKIPPED (config flag)"
+                            );
                             true
                         } else {
                             match resolve_profile(&rpc, &header.sender_ss58).await {
@@ -746,10 +750,7 @@ impl Client {
                                     }
                                 }
                                 Err(e) => {
-                                    tracing::warn!(
-                                        "DATA_ALPN: Failed to resolve profile: {}",
-                                        e
-                                    );
+                                    tracing::warn!("DATA_ALPN: Failed to resolve profile: {}", e);
                                     false
                                 }
                             }
@@ -810,7 +811,11 @@ impl Client {
                                                 (Some(sk), Some(pk)) => {
                                                     match crypto::open(&msg.payload, pk, sk) {
                                                         Ok(plaintext) => {
-                                                            match serde_json::from_slice::<HermesMessage>(&plaintext) {
+                                                            match serde_json::from_slice::<
+                                                                HermesMessage,
+                                                            >(
+                                                                &plaintext
+                                                            ) {
                                                                 Ok(inner) => {
                                                                     tracing::info!(
                                                                         action = %inner.action,

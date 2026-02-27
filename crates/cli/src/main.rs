@@ -333,9 +333,11 @@ async fn main() -> Result<()> {
             file_path,
             expiration,
         } => {
-            let s3_config = client.config().s3.as_ref().ok_or_else(|| {
-                anyhow::anyhow!("Missing `s3` block in hermes_config.json")
-            })?;
+            let s3_config = client
+                .config()
+                .s3
+                .as_ref()
+                .ok_or_else(|| anyhow::anyhow!("Missing `s3` block in hermes_config.json"))?;
             let path_str = file_path.to_string_lossy().to_string();
 
             println!("[*] Uploading file to Hippius S3...");
@@ -343,10 +345,16 @@ async fn main() -> Result<()> {
                 hippius_hermes_core::store::upload::upload_file_to_s3(s3_config, &path_str).await?;
             println!("[+] Uploaded. Object key: {}", object_key);
 
-            println!("[*] Generating presigned GET URL (expires in {}s)...", expiration);
-            let presigned_url =
-                hippius_hermes_core::store::upload::generate_presigned_get(s3_config, &object_key, *expiration)
-                    .await?;
+            println!(
+                "[*] Generating presigned GET URL (expires in {}s)...",
+                expiration
+            );
+            let presigned_url = hippius_hermes_core::store::upload::generate_presigned_get(
+                s3_config,
+                &object_key,
+                *expiration,
+            )
+            .await?;
             println!("[+] Presigned URL: {}", presigned_url);
         }
 
@@ -358,7 +366,10 @@ async fn main() -> Result<()> {
             let path_str = file_path.to_string_lossy().to_string();
             let peer_id_str = peer_node_id.as_deref();
 
-            println!("[*] Uploading {} to S3, then sending URL to {}...", path_str, dest_ss58);
+            println!(
+                "[*] Uploading {} to S3, then sending URL to {}...",
+                path_str, dest_ss58
+            );
             client
                 .send_file_via_s3(dest_ss58, &path_str, peer_id_str)
                 .await?;
@@ -386,12 +397,7 @@ async fn main() -> Result<()> {
             // Resolve the peer's on-chain address to get the endpoint; the core method
             // resolves the encryption key internally.
             client
-                .send_message_encrypted(
-                    dest_ss58,
-                    action,
-                    message.as_bytes().to_vec(),
-                    peer_id_str,
-                )
+                .send_message_encrypted(dest_ss58, action, message.as_bytes().to_vec(), peer_id_str)
                 .await?;
             println!("[+] Encrypted message sent successfully.");
         }

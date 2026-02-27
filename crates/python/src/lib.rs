@@ -407,9 +407,7 @@ impl PyHermesClient {
             client
                 .send_message_encrypted(&dest_ss58, &action, payload, peer_id_str)
                 .await
-                .map_err(|e| {
-                    PyRuntimeError::new_err(format!("Encrypted send failed: {}", e))
-                })?;
+                .map_err(|e| PyRuntimeError::new_err(format!("Encrypted send failed: {}", e)))?;
             Ok(())
         })
     }
@@ -456,7 +454,7 @@ impl PyHermesClient {
 
 /// A pure-Rust M2M Control and Data Plane over Iroh and Substrate.
 #[pymodule]
-fn hermes(_py: Python, m: &PyModule) -> PyResult<()> {
+fn core(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_class::<PyConfig>()?;
     m.add_class::<PyHermesClient>()?;
     Ok(())

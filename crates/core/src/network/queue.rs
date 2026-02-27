@@ -70,7 +70,14 @@ impl MessageQueue {
         subnet_id: Option<u16>,
         enqueued_at: u64,
     ) -> Result<()> {
-        self.push_internal(dest_ss58, dest_addr, message, retry_count, subnet_id, enqueued_at)
+        self.push_internal(
+            dest_ss58,
+            dest_addr,
+            message,
+            retry_count,
+            subnet_id,
+            enqueued_at,
+        )
     }
 
     fn push_internal(
@@ -322,7 +329,8 @@ mod tests {
             .insert(b"legacy_key", serde_json::to_vec(&legacy).unwrap())
             .unwrap();
 
-        let (_, _, popped_msg, retry_count, subnet_id, enqueued_at) = queue.pop_next().unwrap().unwrap();
+        let (_, _, popped_msg, retry_count, subnet_id, enqueued_at) =
+            queue.pop_next().unwrap().unwrap();
         assert_eq!(popped_msg.action, "old_format");
         assert_eq!(retry_count, 3);
         assert_eq!(subnet_id, None); // #[serde(default)] ensures None

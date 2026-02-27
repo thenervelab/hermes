@@ -9,7 +9,7 @@ homepage = "https://hermes.hippius.com"
 authors = ["The Hippius Project <https://hippius.com>"]
 
 [lib]
-name = "hermes"
+name = "core"
 crate-type = ["cdylib"]
 
 [dependencies]

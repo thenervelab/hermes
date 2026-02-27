@@ -259,7 +259,10 @@ mod tests {
         let decrypted_msg: HermesMessage = serde_json::from_slice(&decrypted_bytes).unwrap();
 
         assert_eq!(decrypted_msg.action, "secret_ping");
-        assert_eq!(decrypted_msg.sender_ss58, "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY");
+        assert_eq!(
+            decrypted_msg.sender_ss58,
+            "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY"
+        );
         assert_eq!(decrypted_msg.payload, b"Hello E2E");
     }
 
@@ -285,6 +288,9 @@ mod tests {
         }
 
         let result = open(&ciphertext, &recipient_pk, &recipient_sk);
-        assert!(result.is_err(), "Tampered ciphertext should fail decryption");
+        assert!(
+            result.is_err(),
+            "Tampered ciphertext should fail decryption"
+        );
     }
 }
