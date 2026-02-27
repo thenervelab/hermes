@@ -27,29 +27,42 @@ impl EncryptionPubKey {
     }
 }
 
-/// Parses an on-chain encryption key (hex-encoded bytes from AccountProfile) into a
+/// Parses an on-chain encryption key from AccountProfile into a
 /// `crypto_box::PublicKey` suitable for NaCl SealedBox operations.
+///
+/// Accepts either raw 32-byte keys or hex-encoded keys (with optional "0x" prefix).
 pub fn parse_onchain_encryption_key(raw: &[u8]) -> Result<crypto_box::PublicKey> {
-    // On-chain keys are stored as hex-encoded bytes (with optional "0x" prefix)
-    let hex_str = std::str::from_utf8(raw)
-        .map_err(|_| HermesError::Encryption("Encryption key is not valid UTF-8".into()))?;
-
-    let hex_str = hex_str.strip_prefix("0x").unwrap_or(hex_str);
-
-    let decoded = hex::decode(hex_str).map_err(|e| {
-        HermesError::Encryption(format!("Failed to hex-decode encryption key: {}", e))
-    })?;
-
-    if decoded.len() != 32 {
-        return Err(HermesError::Encryption(format!(
-            "Encryption key must be 32 bytes after hex decode, got {}",
-            decoded.len()
-        )));
+    // If exactly 32 bytes and not valid UTF-8, treat as raw key bytes
+    if raw.len() == 32 && std::str::from_utf8(raw).is_err() {
+        let mut arr = [0u8; 32];
+        arr.copy_from_slice(raw);
+        return Ok(crypto_box::PublicKey::from(arr));
     }
 
-    let mut arr = [0u8; 32];
-    arr.copy_from_slice(&decoded);
-    Ok(crypto_box::PublicKey::from(arr))
+    // Otherwise, try hex-encoded (with optional "0x" prefix)
+    if let Ok(hex_str) = std::str::from_utf8(raw) {
+        let hex_str = hex_str.strip_prefix("0x").unwrap_or(hex_str);
+
+        let decoded = hex::decode(hex_str).map_err(|e| {
+            HermesError::Encryption(format!("Failed to hex-decode encryption key: {}", e))
+        })?;
+
+        if decoded.len() != 32 {
+            return Err(HermesError::Encryption(format!(
+                "Encryption key must be 32 bytes after hex decode, got {}",
+                decoded.len()
+            )));
+        }
+
+        let mut arr = [0u8; 32];
+        arr.copy_from_slice(&decoded);
+        return Ok(crypto_box::PublicKey::from(arr));
+    }
+
+    Err(HermesError::Encryption(format!(
+        "Encryption key must be 32 raw bytes or hex-encoded, got {} bytes",
+        raw.len()
+    )))
 }
 
 /// Loads a 32-byte X25519 secret key from a file on disk.
