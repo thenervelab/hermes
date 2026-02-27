@@ -104,7 +104,7 @@ pub fn seal(plaintext: &[u8], recipient_pub: &crypto_box::PublicKey) -> Result<V
 
 /// Decrypts a SealedBox ciphertext using the recipient's keypair.
 ///
-/// Expects wire format: [32-byte ephemeral pubkey] [24-byte nonce] [ciphertext]
+/// Expects wire format: \[32-byte ephemeral pubkey\] \[24-byte nonce\] \[ciphertext\]
 pub fn open(
     sealed: &[u8],
     _recipient_pub: &crypto_box::PublicKey,
