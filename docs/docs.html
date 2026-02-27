@@ -47,6 +47,9 @@
 
     <main class="docs-main">
         <aside class="docs-sidebar">
+            <button class="docs-sidebar-toggle" id="docs-sidebar-toggle">
+                <i class='bx bx-menu'></i> Navigation
+            </button>
             <nav class="docs-nav">
                 <h4>Getting Started</h4>
                 <ul>
@@ -1465,7 +1468,35 @@ async fn main() -> anyhow::Result&lt;()&gt; {
         }, { rootMargin: '-20% 0px -80% 0px' });
 
         sections.forEach(section => observer.observe(section));
+
+        // Docs sidebar toggle for mobile
+        const sidebarToggle = document.getElementById('docs-sidebar-toggle');
+        const docsNav = document.querySelector('.docs-nav');
+        if (sidebarToggle && docsNav) {
+            sidebarToggle.addEventListener('click', () => {
+                docsNav.classList.toggle('expanded');
+                const icon = sidebarToggle.querySelector('i');
+                if (docsNav.classList.contains('expanded')) {
+                    icon.classList.remove('bx-menu');
+                    icon.classList.add('bx-x');
+                } else {
+                    icon.classList.remove('bx-x');
+                    icon.classList.add('bx-menu');
+                }
+            });
+            // Close sidebar when a link is clicked on mobile
+            docsNav.querySelectorAll('a').forEach(link => {
+                link.addEventListener('click', () => {
+                    docsNav.classList.remove('expanded');
+                    const icon = sidebarToggle.querySelector('i');
+                    icon.classList.remove('bx-x');
+                    icon.classList.add('bx-menu');
+                });
+            });
+        }
     </script>
+
+    <script src="app_v2.js"></script>
 </body>
 
 </html>
