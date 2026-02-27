@@ -112,7 +112,7 @@
                             <div class="docs-feature-icon purple"><i class='bx bx-broadcast'></i></div>
                             <div>
                                 <strong>Control Plane</strong>
-                                <p>Low-latency QUIC signaling via <code>iroh-net</code> with direct UDP hole-punching.
+                                <p>Low-latency QUIC signaling via <code>iroh</code> with direct UDP hole-punching.
                                     No relays.</p>
                             </div>
                         </div>
@@ -138,7 +138,7 @@
 
                 <h3>Rust</h3>
                 <pre><code class="lang-toml">[dependencies]
-hippius-hermes-core = "0.1"</code></pre>
+hippius-hermes-core = "0.2"</code></pre>
             </section>
 
             <!-- Node Registration -->
@@ -474,7 +474,7 @@ Sender (Subnet 69) ── hippius-hermes/subnet/69 ──> Receiver (Subnet 42)
                 <pre><code class="lang-json">{
     "subnet_ids": [1, 42, 69]
 }</code></pre>
-                <p>The node registers <strong>4 ALPNs</strong>:</p>
+                <p>The node registers <strong>5 ALPNs</strong>:</p>
                 <div class="docs-table-wrap">
                     <table class="docs-table">
                         <thead>
@@ -488,20 +488,25 @@ Sender (Subnet 69) ── hippius-hermes/subnet/69 ──> Receiver (Subnet 42)
                             <tr>
                                 <td>1</td>
                                 <td><code>hippius-hermes/1</code></td>
-                                <td>Always registered (cross-subnet)</td>
+                                <td>Always registered (cross-subnet control)</td>
                             </tr>
                             <tr>
                                 <td>2</td>
+                                <td><code>hippius-hermes/data/1</code></td>
+                                <td>Always registered (direct P2P data)</td>
+                            </tr>
+                            <tr>
+                                <td>3</td>
                                 <td><code>hippius-hermes/subnet/1</code></td>
                                 <td>From <code>subnet_ids</code></td>
                             </tr>
                             <tr>
-                                <td>3</td>
+                                <td>4</td>
                                 <td><code>hippius-hermes/subnet/42</code></td>
                                 <td>From <code>subnet_ids</code></td>
                             </tr>
                             <tr>
-                                <td>4</td>
+                                <td>5</td>
                                 <td><code>hippius-hermes/subnet/69</code></td>
                                 <td>From <code>subnet_ids</code></td>
                             </tr>
@@ -515,10 +520,10 @@ Sender (Subnet 69) ── hippius-hermes/subnet/69 ──> Receiver (Subnet 42)
                     of its registered ALPNs:
                 </p>
                 <pre><code class="lang-text">Node A: subnet_ids = [42, 69]
-    Accepts: hippius-hermes/1, hippius-hermes/subnet/42, hippius-hermes/subnet/69
+    Accepts: hippius-hermes/1, hippius-hermes/data/1, hippius-hermes/subnet/42, hippius-hermes/subnet/69
 
 Node B: subnet_ids = [42, 100]
-    Accepts: hippius-hermes/1, hippius-hermes/subnet/42, hippius-hermes/subnet/100
+    Accepts: hippius-hermes/1, hippius-hermes/data/1, hippius-hermes/subnet/42, hippius-hermes/subnet/100
 
 Communication paths:
     A -> B via hippius-hermes/1           OK  (both accept cross-subnet)
@@ -709,7 +714,7 @@ client.start_listener(on_message, on_data=on_file)</code></pre>
                 <h3>Rust Example</h3>
                 <pre><code class="lang-rust">// Sender: push file directly to peer
 let filename = client
-    .send_file_unencrypted(dest_ss58, "./gradients.bin")
+    .send_file_unencrypted(dest_ss58, "./gradients.bin", None)
     .await?;
 
 // Receiver: register data callback
@@ -805,6 +810,7 @@ async def main():
     # Send an E2E encrypted message (NaCl SealedBox)
     await client.send_message_encrypted(
         "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
+        "encrypted_message",
         b"top secret payload data"
     )
 
@@ -815,6 +821,7 @@ asyncio.run(main())</code></pre>
                 <div class="code-block">
                     <pre><code class="lang-bash">hippius-hermes-cli --config hermes_config.json send-encrypted \
     --dest-ss58 5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY \
+    --action "encrypted_message" \
     --message "top secret payload data"</code></pre>
                 </div>
 
@@ -1124,7 +1131,7 @@ def on_file(sender_ss58, filename, local_path, file_size):
 client.start_listener(on_message, on_data=on_file)
 
 # Send E2E encrypted message (NaCl SealedBox)
-await client.send_message_encrypted(dest_ss58, b"secret payload")
+await client.send_message_encrypted(dest_ss58, "encrypted_message", b"secret payload")
 
 # Start background retry worker (requires enable_queue=True in config)
 client.start_retry_worker()</code></pre>
@@ -1195,7 +1202,7 @@ client.spawn_listener(
 );
 
 // Send E2E encrypted message (NaCl SealedBox)
-client.send_message_encrypted("5Dest...", b"secret payload", None).await?;
+client.send_message_encrypted("5Dest...", "encrypted_message", b"secret payload".to_vec(), None).await?;
 
 // Start background retry worker (requires enable_queue in config)
 client.spawn_retry_worker();</code></pre>
@@ -1214,7 +1221,7 @@ assert_eq!(alpn, b"hippius-hermes/subnet/42");
 
 // Build full ALPN list from config
 let alpns = build_alpn_list(&[42, 69]);
-// Returns: ["hippius-hermes/1", "hippius-hermes/subnet/42", "hippius-hermes/subnet/69"]</code></pre>
+// Returns: ["hippius-hermes/1", "hippius-hermes/data/1", "hippius-hermes/subnet/42", "hippius-hermes/subnet/69"]</code></pre>
             </section>
 
             <!-- CLI Reference -->
@@ -1272,19 +1279,19 @@ let alpns = build_alpn_list(&[42, 69]);
                 <p>Download a file from a pre-signed URL (or any HTTP URL) to a local path.</p>
                 <pre><code class="lang-bash">cargo run --bin hippius-hermes-cli -- download-url \
     --url "https://s3.example.com/model.bin?X-Amz-..." \
-    --output ./model.bin</code></pre>
+    --dest-path ./model.bin</code></pre>
 
                 <h3>9. Register Node</h3>
                 <p>Register your node's Iroh NodeId and encryption public key on the Hippius blockchain.</p>
-                <pre><code class="lang-bash">cargo run --bin hippius-hermes-cli -- --config examples/hermes_config.json register</code></pre>
+                <pre><code class="lang-bash">cargo run --bin hippius-hermes-cli -- --config examples/hermes_config.json register \
+    --ss58 5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY</code></pre>
 
                 <h3>10. Push Model</h3>
                 <p>Push a local model directory to the PullWeights registry.</p>
                 <pre><code class="lang-bash">cargo run --bin hippius-hermes-cli -- --config examples/hermes_config.json push-model \
     --org my-org \
     --model my-llm \
-    --tag v1.0.0 \
-    --dir ./model_weights</code></pre>
+    --file-path ./model.safetensors</code></pre>
 
                 <h3>11. Pull Model</h3>
                 <p>Pull a model from the PullWeights registry to a local directory.</p>

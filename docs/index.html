@@ -423,6 +423,7 @@
     <span class="comment"># and NaCl SealedBox encryption (X25519 + XSalsa20-Poly1305).</span>
     <span class="keyword">await</span> client.send_message_encrypted(
         <span class="string">"5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY"</span>,
+        <span class="string">"encrypted_message"</span>,
         <span class="string">b"top secret payload data"</span>
     )
     <span class="function">print</span>(<span class="string">"Payload securely encrypted and delivered!"</span>)

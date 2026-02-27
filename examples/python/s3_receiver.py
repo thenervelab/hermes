@@ -20,10 +20,14 @@ async def main():
 
     print("\n[+] Connected to Hermes! Listening for incoming connections...")
 
+    # Capture the event loop reference BEFORE registering callbacks.
+    # Callbacks fire from Rust tokio threads, so we need run_coroutine_threadsafe.
+    loop = asyncio.get_running_loop()
+
     def on_message(action: str, sender_ss58: str, payload_bytes: bytes):
         """Control plane messages (e.g. metadata, notifications)"""
         print(f"\n[>>>] CONTROL MESSAGE from AUTHORIZED sender {sender_ss58} | Action: {action}")
-        
+
         # When compiling the S3 architecture, the `payload_bytes` will be JSON containing a Pre-Signed URL
         import json
         try:
@@ -32,11 +36,12 @@ async def main():
                 url = payload.get("url")
                 filename = payload.get("file_name")
                 print(f"      [S3 PRESIGNED URL GOTTEN] Valid for 24 hours: {filename}")
-                
-                # Asynchronously download the file to disk using the Rust core's `reqwest` stream!
-                # Because the listener callbacks are synchronous blocking Python functions, 
-                # we must schedule the async download on the main loop.
-                asyncio.create_task(handle_download(client, url, filename))
+
+                # Schedule the async download on the main event loop.
+                # Callbacks run on Rust tokio threads, so we use run_coroutine_threadsafe.
+                asyncio.run_coroutine_threadsafe(
+                    handle_download(client, url, filename), loop
+                )
         except Exception as e:
             print(f"      [RAW PAYLOAD]: {payload_bytes[:100]}... Error parsing: {e}")
 

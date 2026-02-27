@@ -30,6 +30,10 @@ async def main():
     # Shared queue to pass received tasks from the background Iroh listener to the main thread
     task_queue = asyncio.Queue()
 
+    # Capture the event loop reference BEFORE registering callbacks.
+    # Callbacks fire from Rust tokio threads, so we need run_coroutine_threadsafe.
+    loop = asyncio.get_running_loop()
+
     # Callback fired directly from the Rust engine's multi-threaded QUIC sockets
     def on_message_received(action: str, sender_ss58: str, payload_bytes: bytes):
         print(f"\n[>>>] INCOMING MESSAGE FROM {sender_ss58} | Action: {action}")
@@ -41,7 +45,7 @@ async def main():
                 # Push the task onto our local async queue for the heavy worker thread
                 asyncio.run_coroutine_threadsafe(
                     task_queue.put((sender_ss58, meta)),
-                    asyncio.get_running_loop()
+                    loop
                 )
         except Exception as e:
             print(f"[-] Malformed payload: {e}")
@@ -51,7 +55,7 @@ async def main():
         # Push the task onto our local async queue for the heavy worker thread
         asyncio.run_coroutine_threadsafe(
             task_queue.put((sender_ss58, local_path)),
-            asyncio.get_running_loop()
+            loop
         )
 
     # Bind the listener onto the relentless Rust loop
