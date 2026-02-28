@@ -93,9 +93,9 @@ pub async fn push_file(
     tracing::info!("File data sent, waiting for receiver to process...");
     match tokio::time::timeout(Duration::from_secs(30), connection.closed()).await {
         Ok(_) => tracing::info!("Receiver closed connection, transfer complete"),
-        Err(_) => tracing::warn!(
-            "Timed out waiting for receiver close — data was sent successfully"
-        ),
+        Err(_) => {
+            tracing::warn!("Timed out waiting for receiver close — data was sent successfully")
+        }
     }
 
     Ok(filename)

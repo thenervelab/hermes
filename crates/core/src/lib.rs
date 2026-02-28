@@ -29,6 +29,7 @@ pub mod crypto;
 pub mod error;
 pub mod identity;
 pub mod network;
+pub mod online_client;
 pub mod store;
 
 pub use acl::{Acl, AclVerdict};

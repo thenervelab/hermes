@@ -463,8 +463,7 @@ async fn main() -> Result<()> {
 
             // 4. Fetch chain parameters via subxt RPC
             println!("[*] Connecting to Hippius RPC at {}...", config.rpc_url);
-            let rpc_client =
-                subxt::OnlineClient::<subxt::PolkadotConfig>::from_url(&config.rpc_url).await?;
+            let rpc_client = hippius_hermes_core::online_client::connect(&config.rpc_url).await?;
 
             let genesis_hash = rpc_client.genesis_hash();
             let latest_block = rpc_client.blocks().at_latest().await?;
