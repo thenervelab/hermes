@@ -1,8 +1,6 @@
 use crate::error::{HermesError, Result};
 use sp_core::crypto::AccountId32;
 use subxt::dynamic::Value;
-use subxt::OnlineClient;
-use subxt::PolkadotConfig;
 
 /// Base58 alphabet used by SS58 encoding.
 const BASE58_CHARS: &[u8] = b"123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
@@ -85,11 +83,7 @@ pub async fn resolve_profile(rpc_url: &str, ss58: &str) -> Result<AccountProfile
     let account_id = AccountId32::from_ss58check(ss58)
         .map_err(|e| HermesError::Identity(format!("Invalid SS58 address format: {:?}", e)))?;
 
-    let client = OnlineClient::<PolkadotConfig>::from_url(rpc_url)
-        .await
-        .map_err(|e| {
-            HermesError::Identity(format!("Failed to connect to RPC node {}: {}", rpc_url, e))
-        })?;
+    let client = crate::online_client::connect(rpc_url).await?;
 
     // Create a dynamic storage query for AccountProfile::AccountProfiles(AccountId32)
     let storage_query = subxt::dynamic::storage(

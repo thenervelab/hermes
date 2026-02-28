@@ -18,10 +18,11 @@ tokio = { version = "1.35", features = ["full", "tracing"] }
 iroh = "0.96.1"
 
 # Substrate Client (for Identity fetching)
-subxt = "0.34"
+subxt = { version = "0.34", default-features = false, features = ["native"] }
+jsonrpsee = { version = "0.21", default-features = false, features = ["async-client", "client-ws-transport-webpki-tls"] }
 
 # HTTP API (for SyncEngine)
-reqwest = { version = "0.11", features = ["json", "multipart", "stream"] }
+reqwest = { version = "0.11", default-features = false, features = ["json", "multipart", "stream", "rustls-tls"] }
 tokio-util = { version = "0.7", features = ["io"] }
 
 # Offline storage queue
@@ -50,7 +51,7 @@ tracing = "0.1"
 # Error Handling
 thiserror = "1.0"
 anyhow = "1.0"
-rust-s3 = { version = "0.37.1", default-features = false, features = ["tokio-native-tls"] }
+rust-s3 = { version = "0.37.1", default-features = false, features = ["tokio-rustls-tls"] }
 sp-core = "39.0.0"
 scale-decode = "0.10.0"
 parity-scale-codec = "3.7.5"

@@ -700,13 +700,14 @@ impl Client {
                         let remote_pub = connection.remote_id();
 
                         // Issue #4: Read header FIRST, verify identity, THEN stream to disk
-                        let (connection, recv, header) = match read_data_push_header(connection).await {
-                            Ok(result) => result,
-                            Err(e) => {
-                                tracing::warn!(error = %e, "DATA_ALPN: failed to read header");
-                                return;
-                            }
-                        };
+                        let (connection, recv, header) =
+                            match read_data_push_header(connection).await {
+                                Ok(result) => result,
+                                Err(e) => {
+                                    tracing::warn!(error = %e, "DATA_ALPN: failed to read header");
+                                    return;
+                                }
+                            };
 
                         // Verify sender identity before writing any file to disk
                         let verified = if skip_identity_verification {
